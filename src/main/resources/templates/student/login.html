@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Student Login - TMS</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+
+<div th:replace="fragments/layout :: navbar-auth"></div>
+
+<section class="hero" style="padding:70px 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-7">
+        <div class="card shadow-sm rounded-4 fadeUp">
+          <div class="card-body p-4">
+            <div class="hero-badge mb-3">
+              <i class="bi bi-person-fill"></i> Student Portal
+            </div>
+
+            <h3 class="mb-2" style="font-weight:900; letter-spacing:-.5px;">Student Login</h3>
+            <p class="text-muted mb-4">Log in to check your registration progress.</p>
+
+            <div th:if="${param.registered}" class="alert alert-success">
+              Registration submitted! Please log in to check your status.
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <form method="post" th:action="@{/student/login}">
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input class="form-control" name="username" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input class="form-control" type="password" name="password" required>
+              </div>
+
+              <button class="btn-hero-primary w-100 justify-content-center" type="submit">
+                <i class="bi bi-box-arrow-in-right"></i> Log In
+              </button>
+            </form>
+
+            <div class="mt-3 text-center">
+              <a th:href="@{/student/register}" style="color:var(--primary); font-weight:700; text-decoration:none;">
+                New student? Register here
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-3">
+          <a th:href="@{/}" class="btn-hero-outline">Back to Home</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
