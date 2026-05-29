@@ -109,7 +109,7 @@ The system consists of five main modules:
 
 ### Database
 
-- Microsoft SQL Server
+- SQL Server Management Studio
 
 ### Tools
 
