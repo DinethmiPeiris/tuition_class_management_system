@@ -162,9 +162,9 @@ tuition-class-management-system/
 |---|---|---|---|---|
 | IT24101073 | Praghnarathna M.A. | Scrum Master | Course and Enrollment Management | [@miuniakarsha](https://github.com/miuniakarsha) |
 | IT24100906 | Pinnedoowe R.D. | Team Member | Student Management | [@radild](https://github.com/radild) |
-| IT24101204 | Peiris H.D.T. | Team Member | Academic Communication and Activity Management | [@DinethmiPeiris](https://github.com/DinethmiPeiris) |
+| IT24101204 | Peiris H.D.T. | Team Member | Examination and Academic Performance Management | [@DinethmiPeiris](https://github.com/DinethmiPeiris) |
 | IT24101104 | Attanayake H.M. | Team Member | Class and Attendance Management | [@hHansaniMalshi](https://github.com/hHansaniMalshi) |
-| IT24101767 | Hewage D.N.K. | Team Member | Examination and Academic Performance Management | [@IT24101767](https://github.com/IT24101767) |
+| IT24101767 | Hewage D.N.K. | Team Member | Academic Communication and Activity Management | [@IT24101767](https://github.com/IT24101767) |
 
 ## How to Run the Project
 
