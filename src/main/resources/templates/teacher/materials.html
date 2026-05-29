@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Material Management - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+    
+    <style>
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .file-display-btn {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(67, 97, 238, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(67, 97, 238, 0.1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .file-display-btn:hover { background: var(--primary); color: white; }
+        
+        .action-btn-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .btn-edit { background: rgba(67, 97, 238, 0.1); color: var(--primary); }
+        .btn-edit:hover { background: var(--primary); color: white; }
+        .btn-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+    </style>
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-folder-fill"></i> Resource Library</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Study Materials</h3>
+                <div class="text-muted">Upload and distribute lesson notes, assignments, and reference guides.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/dashboard}" class="btn-hero-outline">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="fragments/flash :: flash"></div>
+
+        <!-- Upload Form Section -->
+        <div class="form-card shadow-sm fadeUpDelay1">
+            <h5 class="fw-bold mb-3">
+                <i class="bi bi-cloud-upload-fill text-primary me-2"></i>
+                <span th:text="${materialForm.materialId != null ? 'Refine Resource Details' : 'Upload New Resources'}">Manage Material</span>
+            </h5>
+            <form th:action="@{/teacher/materials/upload}" method="post" enctype="multipart/form-data" th:object="${materialForm}" class="row g-3">
+                <input type="hidden" th:field="*{materialId}" />
+
+                <div class="col-lg-2 col-md-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Grade</label>
+                    <select class="form-select bg-light border-0 px-3 py-2" th:field="*{grade}">
+                        <option value="">-- Grade --</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                    </select>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('grade')}" th:errors="*{grade}"></div>
+                </div>
+
+                <div class="col-lg-2 col-md-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Subject</label>
+                    <select class="form-select bg-light border-0 px-3 py-2" th:field="*{subject}">
+                        <option value="">-- Subject --</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Science">Science</option>
+                    </select>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}"></div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Material Title</label>
+                    <input class="form-control bg-light border-0 px-3 py-2" th:field="*{title}" placeholder="Eg: Week 04 - Trigonometry Notes">
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Month</label>
+                    <select class="form-select bg-light border-0 px-3 py-2" th:field="*{month}">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('month')}" th:errors="*{month}"></div>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Year</label>
+                    <input type="number" class="form-control bg-light border-0 px-3 py-2" th:field="*{year}" placeholder="2026">
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('year')}" th:errors="*{year}"></div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Choose Document</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-file-earmark-pdf"></i></span>
+                        <input type="file" class="form-control bg-light border-0 py-2" th:field="*{materialFile}">
+                    </div>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('materialFile')}" th:errors="*{materialFile}"></div>
+                    <div th:if="${materialForm.materialId != null}" class="text-muted small mt-1 italic"><i class="bi bi-info-circle me-1"></i> Leave empty to keep existing file.</div>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2 mt-2">
+                    <a th:if="${materialForm.materialId != null}" th:href="@{/teacher/materials}" class="btn btn-light border-0 px-4">Cancel</a>
+                    <button class="btn btn-primary px-5 py-2 fw-bold shadow-sm" type="submit">
+                        <i class="bi bi-cloud-arrow-up me-2"></i>
+                        <span th:text="${materialForm.materialId != null ? 'Update Resource' : 'Publish Resource'}">Upload</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Materials Table -->
+        <div class="card shadow-sm rounded-4 border-0 overflow-hidden fadeUpDelay2">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-collection-play text-primary me-2"></i>Published Resources</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <select id="filterGrade" class="form-select form-select-sm border-0 bg-light fw-semibold" style="width: 110px;">
+                        <option value="All">All Grades</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                    </select>
+                    <select id="filterSubject" class="form-select form-select-sm border-0 bg-light fw-semibold" style="width: 140px;">
+                        <option value="All">All Subjects</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Science">Science</option>
+                    </select>
+                    <span class="badge bg-primary rounded-pill px-3 ms-2" th:text="${materials.size() + ' Documents'}">0 Documents</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-uppercase small fw-bold">
+                            <tr>
+                                <th class="ps-4">Grade</th>
+                                <th>Subject</th>
+                                <th>Resource Info</th>
+                                <th class="text-center">Scheduled For</th>
+                                <th class="text-center">Added On</th>
+                                <th class="text-center">Action</th>
+                                <th class="text-end pe-4">Management</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(materials)}">
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted mb-2"><i class="bi bi-journal-x fs-1"></i></div>
+                                    <div class="fw-bold text-dark">Library is empty</div>
+                                    <div class="small text-muted">Begin by uploading your first study material.</div>
+                                </td>
+                            </tr>
+                            <tr th:each="m : ${materials}" class="material-row">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark grade-cell" th:text="${m.batch.course.grade}">10</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark subject-cell" th:text="${m.batch.course.subject}">Mathematics</div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark" th:text="${m.title}">Lesson Note</div>
+                                    <div class="small text-muted fw-mono" th:text="${'#M' + m.materialId}">#M1</div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2" th:text="${#strings.capitalize(#strings.toLowerCase(T(java.time.Month).of(m.month).name())) + ' ' + m.year}">March 2026</span>
+                                </td>
+                                <td class="text-center text-muted small" th:text="${m.uploadedDate}">2026-03-30</td>
+                                <td class="text-center">
+                                    <a th:href="${m.filePath}" target="_blank" class="file-display-btn shadow-sm">
+                                        <i class="bi bi-download"></i> Download
+                                    </a>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="action-btn-group">
+                                        <a th:href="@{/teacher/materials/{id}/edit(id=${m.materialId})}" class="btn-action btn-edit shadow-sm" title="Edit Resource">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+
+                                        <form th:action="@{/teacher/materials/{id}/delete(id=${m.materialId})}" method="post" class="d-inline">
+                                            <button type="submit" class="btn-action btn-delete shadow-sm" title="Delete Permanent" onclick="return confirm('Permanently remove this resource? Students will no longer be able to access it.');">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filterGrade = document.getElementById("filterGrade");
+        const filterSubject = document.getElementById("filterSubject");
+        const rows = document.querySelectorAll(".material-row");
+
+        function filterTable() {
+            const gradeVal = filterGrade.value;
+            const subjectVal = filterSubject.value;
+
+            rows.forEach(row => {
+                const gradeText = row.querySelector(".grade-cell").textContent.trim();
+                const subjectText = row.querySelector(".subject-cell").textContent.trim();
+
+                const gradeMatch = (gradeVal === "All") || (gradeText.includes(gradeVal));
+                const subjectMatch = (subjectVal === "All") || (subjectText.includes(subjectVal));
+
+                if (gradeMatch && subjectMatch) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        filterGrade.addEventListener("change", filterTable);
+        filterSubject.addEventListener("change", filterTable);
+    });
+</script>
+</body>
+</html>

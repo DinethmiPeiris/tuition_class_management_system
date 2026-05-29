@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student Dashboard - TMS</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:40px 0;">
+    <div class="container">
+
+        <!-- Header Section -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 fadeUpDelay1">
+            <div>
+                <div class="hero-badge mb-2">
+                    <i class="bi bi-person-badge-fill"></i> Student Portal
+                </div>
+                <h2 class="mb-0" style="font-weight:900; letter-spacing:-1px; font-size: 2.2rem;">
+                    Welcome, <span th:text="${req.fullName}">Student</span>
+                </h2>
+                <div class="text-muted">Manage your studies, payments, and track your progress.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/e5/announcements/student}" class="btn btn-info text-white btn-sm rounded-3 px-3 d-flex align-items-center gap-2" style="font-weight: 600;">
+                    <i class="bi bi-megaphone-fill"></i> Announcements
+                </a>
+                <a th:href="@{/e5/messages/student/inbox}" class="btn btn-info text-white btn-sm rounded-3 px-3 d-flex align-items-center gap-2" style="font-weight: 600;">
+                    <i class="bi bi-chat-dots-fill"></i> Messages
+                </a>
+                <a th:href="@{/student/feedback}" class="btn-hero-outline" style="background: #fff; border: 1px solid #ddd; padding: 10px 20px; border-radius: 12px; color: var(--primary); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-chat-left-dots"></i> Feedback
+                </a>
+            </div>
+        </div>
+
+        <!-- Registration Status Card (Previous Style) -->
+        <div class="card shadow-sm rounded-4 fadeUp mb-4">
+            <div class="card-body p-4">
+                <h5 class="mb-3" style="font-weight:800;">Registration Status</h5>
+
+                <div class="alert mb-0"
+                     th:classappend="${req.status.name()=='PENDING'} ? ' alert-warning' :
+                                     (${req.status.name()=='APPROVED'} ? ' alert-success' : ' alert-danger')">
+                    <strong>Status:</strong> <span th:text="${req.status}">PENDING</span>
+                </div>
+
+                <!-- APPROVED EXTRA DETAILS -->
+                <div th:if="${req.status.name()=='APPROVED'}" class="mt-3">
+                    <div class="p-3 rounded-3" style="background: var(--primary-light); border: 1px solid rgba(29,111,243,.20);">
+                        <div class="fw-bold text-success">Approved ✅</div>
+                        <div class="text-muted small">Your official Student ID is shown below.</div>
+
+                        <div class="mt-2">
+                            <span class="badge text-bg-success">Student ID</span>
+                            <span class="ms-2 fw-bold text-primary" style="font-size: 1.1rem;"
+                                  th:text="${req.createdStudent != null ? req.createdStudent.studentCode : 'PENDING'}">
+                                STU0001
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Status Notice (INACTIVE or SUSPENDED) -->
+        <div th:if="${studentStatus != null and (studentStatus.name() == 'INACTIVE' or studentStatus.name() == 'SUSPENDED')}" class="fadeUp mb-4">
+            <div class="alert mb-0"
+                 th:classappend="${studentStatus.name() == 'SUSPENDED'} ? ' alert-danger' : ' alert-warning'"
+                 style="border-radius: 12px; display: flex; align-items: center; gap: 10px;">
+                <i class="bi fs-4"
+                   th:classappend="${studentStatus.name() == 'SUSPENDED'} ? ' bi-slash-circle-fill' : ' bi-pause-circle-fill'"></i>
+                <div>
+                    <div th:if="${studentStatus.name() == 'SUSPENDED'}">
+                        <strong>Account Suspended.</strong> Your account has been suspended. You cannot access any features.
+                        Please contact your teacher for assistance.
+                    </div>
+                    <div th:if="${studentStatus.name() == 'INACTIVE'}">
+                        <strong>Account Inactive.</strong> Your account is currently inactive.
+                        You can view your existing resources but cannot perform new actions.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Grid (Only if Approved and not Suspended) -->
+        <div th:if="${req.status.name()=='APPROVED' and (studentStatus == null or studentStatus.name() != 'SUSPENDED')}" class="action-grid fadeUpDelay2">
+
+            <a th:href="@{/student/courses}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle bg-primary-light text-primary mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-journal-bookmark-fill fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Courses & Enrollment</h6>
+                        <p class="text-muted small mb-0">Browse and join new classes</p>
+                    </div>
+                </div>
+            </a>
+
+            <a th:href="@{/student/materials}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #ecfdf5; color: #059669;">
+                            <i class="bi bi-cloud-download-fill fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Study Materials</h6>
+                        <p class="text-muted small mb-0">Download notes and lessons</p>
+                    </div>
+                </div>
+            </a>
+
+            <a th:href="@{/student/timetable}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f5f3ff; color: #7c3aed;">
+                            <i class="bi bi-calendar3 fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Class Timetable</h6>
+                        <p class="text-muted small mb-0">View your weekly schedules</p>
+                    </div>
+                </div>
+            </a>
+
+            <a th:href="@{/student/exams}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle bg-warning-light text-warning mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #fffbeb; color: #d97706;">
+                            <i class="bi bi-file-earmark-check-fill fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Exams & Quizzes</h6>
+                        <p class="text-muted small mb-0">Take tests and view results</p>
+                    </div>
+                </div>
+            </a>
+
+            <a th:href="@{/student/payment-slips}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #fff1f2; color: #e11d48;">
+                            <i class="bi bi-receipt fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Payment Slips</h6>
+                        <p class="text-muted small mb-0">Upload and manage receipts</p>
+                    </div>
+                </div>
+            </a>
+
+            <a th:href="@{/student/exams/results}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f0f9ff; color: #0369a1;">
+                            <i class="bi bi-award-fill fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Result History</h6>
+                        <p class="text-muted small mb-0">Review your exam performance</p>
+                    </div>
+                </div>
+            </a>
+
+            <a th:href="@{/student/attendance/notifications}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #fff1f2; color: #dc2626;">
+                            <i class="bi bi-bell-fill fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">Absence Notifications</h6>
+                        <p class="text-muted small mb-0">View your absence alerts</p>
+                    </div>
+                </div>
+            </a>
+
+            <a th:href="@{/student/attendance}" class="dashboard-card-btn text-decoration-none">
+                <div class="card shadow-sm border-0 rounded-4 h-100 overflow-hidden">
+                    <div class="card-body p-3 text-center">
+                        <div class="rounded-circle mx-auto mb-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f0fdf4; color: #16a34a;">
+                            <i class="bi bi-clipboard2-check-fill fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">My Attendance</h6>
+                        <p class="text-muted small mb-0">Track your class attendance</p>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Suspended: locked panel shown instead of action grid -->
+        <div th:if="${req.status.name()=='APPROVED' and studentStatus != null and studentStatus.name() == 'SUSPENDED'}" class="fadeUpDelay2">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-5" style="background: #fff1f2;">
+                <div class="rounded-circle bg-danger text-white mx-auto mb-4"
+                     style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-lock-fill fs-2"></i>
+                </div>
+                <h4 class="fw-bold text-danger">Account Suspended</h4>
+                <p class="text-muted mx-auto" style="max-width: 500px;">
+                    Your account has been suspended. All features are currently locked.
+                    Please contact your teacher or administrator to resolve this.
+                </p>
+            </div>
+        </div>
+
+        <!-- Pending State Warning -->
+        <div th:if="${req.status.name()=='PENDING'}" class="fadeUpDelay2">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-5">
+                <div class="mb-4">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <h4 class="fw-bold">Registration in Progress</h4>
+                <p class="text-muted mx-auto" style="max-width: 500px;">
+                    Your registration request is currently being reviewed by the administration. 
+                    Once approved, your dashboard will unlock additional features such as Courses, Exams, and Materials.
+                </p>
+            </div>
+        </div>
+
+        <!-- Rejected State Notification -->
+        <div th:if="${req.status.name()=='REJECTED'}" class="fadeUpDelay2">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-5" style="background: #fff1f2;">
+                <div class="rounded-circle bg-danger text-white mx-auto mb-4" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-x-lg fs-2"></i>
+                </div>
+                <h4 class="fw-bold text-danger">Registration Rejected</h4>
+                <p class="text-muted mb-2">Unfortunately, your registration could not be approved at this time.</p>
+                <div class="alert alert-danger d-inline-block mx-auto mb-0">
+                    <strong>Reason:</strong> <span th:text="${req.rejectionReason ?: 'Contact support for details'}">Reason...</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

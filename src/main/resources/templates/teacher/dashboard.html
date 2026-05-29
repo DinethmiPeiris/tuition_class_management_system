@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher - Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUpDelay1">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-speedometer2"></i> Dashboard</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Teacher Panel</h3>
+                <div class="text-muted">Quick overview of course, enrollment, batch, and payment slip activities</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/e5/announcements/teacher}" class="btn btn-primary btn-sm rounded-3 px-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-megaphone-fill"></i> Announcements
+                </a>
+                <a th:href="@{/e5/messages/inbox}" class="btn btn-primary btn-sm rounded-3 px-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-chat-dots-fill"></i> Messages
+                </a>
+                <a class="btn-hero-outline" th:href="@{/teacher/students}" style="background: #fff; border: 1px solid #ddd; padding: 10px 20px; border-radius: 12px; color: var(--primary); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-people-fill"></i> Students
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-4 fadeUp mb-4 border-0" style="background:transparent;box-shadow:none!important;">
+            <div class="card-body p-0">
+                <div class="row g-4">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card stat-card-green">
+                            <div class="stat-label">Total Courses</div>
+                            <div class="stat-value" th:text="${totalCourses}">0</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card stat-card-amber">
+                            <div class="stat-label">Pending Enrollments</div>
+                            <div class="stat-value" th:text="${pendingEnrollments}">0</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card stat-card-purple">
+                            <div class="stat-label">Total Batches</div>
+                            <div class="stat-value" th:text="${totalBatches}">0</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card stat-card-rose">
+                            <div class="stat-label">Pending Payment Slips</div>
+                            <div class="stat-value" th:text="${pendingPaymentSlips}">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid mt-4">
+                    <!-- 1. Portal Access Requests -->
+                    <a th:href="@{/teacher/requests}" class="action-card-btn">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Portal Access Requests</span>
+                    </a>
+
+                    <!-- 2. Enrollment Requests -->
+                    <a th:href="@{/teacher/enrollments}" class="action-card-btn">
+                        <i class="bi bi-person-plus"></i>
+                        <span>Enrollment Requests</span>
+                    </a>
+
+                    <!-- 3. Courses & Enrollment -->
+                    <a th:href="@{/teacher/courses}" class="action-card-btn">
+                        <i class="bi bi-journal-text"></i>
+                        <span>Courses & Enrollment</span>
+                    </a>
+
+                    <!-- 4. Manage Batches -->
+                    <a th:href="@{/teacher/batches}" class="action-card-btn">
+                        <i class="bi bi-layers"></i>
+                        <span>Manage Batches</span>
+                    </a>
+
+                    <!-- 5. Study Materials -->
+                    <a th:href="@{/teacher/materials}" class="action-card-btn">
+                        <i class="bi bi-folder2-open"></i>
+                        <span>Study Materials</span>
+                    </a>
+
+                    <!-- 6. Class Timetable -->
+                    <a th:href="@{/teacher/timetable/list}" class="action-card-btn">
+                        <i class="bi bi-calendar3"></i>
+                        <span>Class Timetable</span>
+                    </a>
+
+                    <!-- 7. Exams & Quizzes -->
+                    <a th:href="@{/exams}" class="action-card-btn">
+                        <i class="bi bi-clipboard-check"></i>
+                        <span>Exams & Quizzes</span>
+                    </a>
+
+                    <!-- 8. Payment Slips -->
+                    <a th:href="@{/teacher/payment-slips}" class="action-card-btn">
+                        <i class="bi bi-receipt"></i>
+                        <span>Payment Slips</span>
+                    </a>
+
+                    <!-- 9. Attendance Tracking -->
+                    <a th:href="@{/teacher/attendance/select}" class="action-card-btn">
+                        <i class="bi bi-person-check-fill"></i>
+                        <span>Mark Attendance Page</span>
+                    </a>
+
+                    <!-- 10. Progress Reports -->
+                    <a th:href="@{/teacher/reports}" class="action-card-btn">
+                        <i class="bi bi-file-earmark-bar-graph-fill"></i>
+                        <span>Progress Reports</span>
+                    </a>
+
+                    <!-- 11. Payment Tracking -->
+                    <a th:href="@{/teacher/payment-tracking}" class="action-card-btn">
+                        <i class="bi bi-currency-dollar"></i>
+                        <span>Payment Tracking</span>
+                    </a>
+
+                    <!-- 12. Student Feedback -->
+                    <a th:href="@{/teacher/feedback}" class="action-card-btn">
+                        <i class="bi bi-chat-square-heart-fill"></i>
+                        <span>Student Feedback</span>
+                    </a>
+
+                    <!-- 13. Activity Logs -->
+                    <a th:href="@{/e5/activity/logs}" class="action-card-btn">
+                        <i class="bi bi-clipboard-data"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

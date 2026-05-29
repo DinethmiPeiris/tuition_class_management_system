@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student - Study Materials</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-book"></i> Materials</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Study Materials</h3>
+                <div class="text-muted">Access your lesson notes and materials for approved months.</div>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <div class="card shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <form th:action="@{/student/materials}" method="get" class="row g-3">
+                    
+                    <!-- ENROLLMENT SELECT (STABILITY FIX: STANDARD HTML) -->
+                    <div class="col-md-4">
+                        <label class="form-label">Approved Enrollment</label>
+                        <select name="enrollmentId" class="form-select premium-input-field shadow-none" style="height: 48px; border-radius: 12px; font-weight: 600;">
+                            <option value="" selected disabled>Select Enrollment</option>
+                            <option th:each="e : ${approvedEnrollments}" 
+                                    th:value="${e.enrollmentId}" 
+                                    th:selected="${e.enrollmentId == selectedEnrollmentId}"
+                                    th:text="${e.batch.course.courseId + ' | ' + e.batch.batchName}"></option>
+                        </select>
+                    </div>
+
+                    <!-- MONTH SELECT (STABILITY FIX: STANDARD HTML) -->
+                    <div class="col-md-3">
+                        <label class="form-label">Month</label>
+                        <select name="month" class="form-select premium-input-field shadow-none" style="height: 48px; border-radius: 12px; font-weight: 600;">
+                            <option value="" selected disabled>Select Month</option>
+                            <option value="1" th:selected="${selectedMonth == 1}">January</option>
+                            <option value="2" th:selected="${selectedMonth == 2}">February</option>
+                            <option value="3" th:selected="${selectedMonth == 3}">March</option>
+                            <option value="4" th:selected="${selectedMonth == 4}">April</option>
+                            <option value="5" th:selected="${selectedMonth == 5}">May</option>
+                            <option value="6" th:selected="${selectedMonth == 6}">June</option>
+                            <option value="7" th:selected="${selectedMonth == 7}">July</option>
+                            <option value="8" th:selected="${selectedMonth == 8}">August</option>
+                            <option value="9" th:selected="${selectedMonth == 9}">September</option>
+                            <option value="10" th:selected="${selectedMonth == 10}">October</option>
+                            <option value="11" th:selected="${selectedMonth == 11}">November</option>
+                            <option value="12" th:selected="${selectedMonth == 12}">December</option>
+                        </select>
+                    </div>
+
+                    <!-- YEAR INPUT -->
+                    <div class="col-md-2">
+                        <label class="form-label">Year</label>
+                        <input type="number" name="year" th:value="${selectedYear}" 
+                               class="form-control premium-input-field text-center shadow-none" 
+                               style="height: 48px; border-radius: 12px;"
+                               placeholder="Year">
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button class="btn btn-primary flex-grow-1" type="submit" style="height: 48px; font-weight: 700; border-radius: 12px;">
+                            <i class="bi bi-search me-1"></i> Check
+                        </button>
+                        <a th:href="@{/student/materials}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
+                           style="height: 48px; width: 48px; border-radius: 12px;" title="Reset Filters">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- RESULTS CARD -->
+        <div class="card shadow-sm rounded-4 mt-5 border-0" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0" style="font-weight:800;"><i class="bi bi-collection-play-fill text-primary me-2"></i> Available Materials</h5>
+                    <span th:if="${selectedEnrollmentId != null && paymentApproved}" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                        <i class="bi bi-check-circle-fill me-1"></i> Access Granted
+                    </span>
+                    <span th:if="${selectedEnrollmentId != null && !paymentApproved && materials != null && !#lists.isEmpty(materials)}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fw-bold">
+                        <i class="bi bi-lock-fill me-1"></i> Locked Content
+                    </span>
+                </div>
+
+                <!-- PAYMENT ALERT -->
+                <div th:if="${info != null}" class="alert alert-info border-0 rounded-4 p-3 mb-4 shadow-sm animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); color: #0d47a1;">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white rounded-circle p-2 me-3 shadow-sm">
+                            <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+                        </div>
+                        <div>
+                            <strong class="d-block mb-1">Action Required</strong>
+                            <span th:text="${info}">Explanation here.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${materials == null or #lists.isEmpty(materials)}" class="py-5 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-folder2-open display-1 text-muted opacity-25"></i>
+                    </div>
+                    <h6 class="text-muted fw-semibold" th:text="${error != null ? error : 'No materials have been published for this selection yet.'}">No materials found.</h6>
+                </div>
+
+                <div class="table-responsive" th:if="${materials != null and !#lists.isEmpty(materials)}">
+                    <table class="table table-hover align-middle mb-0 custom-table">
+                        <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Resource Name</th>
+                            <th>Period</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="m : ${materials}" th:classappend="${paymentApproved == null or !paymentApproved} ? 'opacity-75' : ''">
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="file-icon-box me-3 rounded-3 d-flex align-items-center justify-content-center" 
+                                         style="width: 42px; height: 42px; background: #f8f9fa; border: 1px solid #eee;">
+                                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark" th:text="${m.title}">Lesson Note</div>
+                                        <small class="text-muted" th:if="${m.uploadedDate != null}" th:text="${'Published: ' + #temporals.format(m.uploadedDate, 'MMM dd, yyyy')}">Date</small>
+                                        <small class="text-muted" th:if="${m.uploadedDate == null}">Published: N/A</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1" style="font-weight: 500;">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span th:if="${m.month == 1}">Jan</span>
+                                    <span th:if="${m.month == 2}">Feb</span>
+                                    <span th:if="${m.month == 3}">Mar</span>
+                                    <span th:if="${m.month == 4}">Apr</span>
+                                    <span th:if="${m.month == 5}">May</span>
+                                    <span th:if="${m.month == 6}">Jun</span>
+                                    <span th:if="${m.month == 7}">Jul</span>
+                                    <span th:if="${m.month == 8}">Aug</span>
+                                    <span th:if="${m.month == 9}">Sep</span>
+                                    <span th:if="${m.month == 10}">Oct</span>
+                                    <span th:if="${m.month == 11}">Nov</span>
+                                    <span th:if="${m.month == 12}">Dec</span>
+                                    <span th:text="${' ' + m.year}"></span>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span th:if="${paymentApproved}" class="text-success fw-bold"><i class="bi bi-unlock-fill"></i> Unlocked</span>
+                                <span th:if="${!paymentApproved}" class="text-muted fw-bold"><i class="bi bi-lock-fill"></i> Locked</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <th:block th:if="${paymentApproved}">
+                                        <a th:href="${m.filePath}" target="_blank" class="btn btn-sm btn-outline-primary px-3 rounded-3 fw-bold">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        <a th:href="${m.filePath}" download class="btn btn-sm btn-primary px-3 rounded-3 fw-bold shadow-sm">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    </th:block>
+                                    <th:block th:if="${!paymentApproved}">
+                                        <button class="btn btn-sm btn-light px-3 rounded-3 fw-bold border text-muted" disabled>
+                                            <i class="bi bi-lock"></i> Locked
+                                        </button>
+                                    </th:block>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student - Payment Slips</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-receipt"></i> Payment Slips</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Upload Payment Slip</h3>
+                <div class="text-muted">Upload monthly payment slips for approved enrollments.</div>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/flash :: flash}"></div>
+
+        <div class="card shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="mb-3" style="font-weight:800;"><i class="bi bi-cloud-upload"></i> Monthly Payment Slip</h5>
+                <form th:action="@{/student/payment-slips/upload}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      th:object="${slipForm}"
+                      class="row g-3">
+
+                    <!-- ENROLLMENT SELECT (STABILITY FIX: STANDARD HTML) -->
+                    <div class="col-md-3">
+                        <label class="form-label">Approved Enrollment</label>
+                        <select th:field="*{enrollmentId}" class="form-select premium-input-field shadow-none" style="height: 48px; border-radius: 12px; font-weight: 600;">
+                            <option value="">Select Enrollment</option>
+                            <option th:each="e : ${approvedEnrollments}" 
+                                    th:value="${e.enrollmentId}" 
+                                    th:text="${e.batch.course.courseId + ' | ' + e.batch.batchName}"></option>
+                        </select>
+                        <div class="text-danger mt-1" th:if="${#fields.hasErrors('enrollmentId')}" th:errors="*{enrollmentId}"></div>
+                    </div>
+
+                    <!-- MONTH SELECT (STABILITY FIX: STANDARD HTML) -->
+                    <div class="col-md-2">
+                        <label class="form-label">Month</label>
+                        <select th:field="*{month}" class="form-select premium-input-field shadow-none" style="height: 48px; border-radius: 12px; font-weight: 600;">
+                            <option value="">Select Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <div class="text-danger mt-1" th:if="${#fields.hasErrors('month')}" th:errors="*{month}"></div>
+                    </div>
+
+                    <!-- YEAR INPUT -->
+                    <div class="col-md-2">
+                        <label class="form-label">Year</label>
+                        <input type="number" th:field="*{year}" 
+                               class="form-control premium-input-field text-center shadow-none" 
+                               style="height: 48px; border-radius: 12px;"
+                               placeholder="Year">
+                    </div>
+
+                    <!-- SLIP UPLOAD -->
+                    <div class="col-md-3">
+                        <label class="form-label">Payment Slip</label>
+                        <input type="file" th:field="*{slipFile}" class="form-control premium-input-field shadow-none" accept="image/*,.pdf" style="height: 48px; border-radius: 12px; padding-top: 10px;">
+                        <div class="text-danger mt-1" th:if="${#fields.hasErrors('slipFile')}" th:errors="*{slipFile}"></div>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button class="btn btn-primary flex-grow-1" type="submit" style="height: 48px; font-weight: 700; border-radius: 12px;">
+                            <i class="bi bi-upload me-1"></i> Upload
+                        </button>
+                        <a th:href="@{/student/payment-slips}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" 
+                           style="height: 48px; width: 48px; border-radius: 12px;" title="Reset Filters">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- UPLOAD HISTORY CARD -->
+        <div class="card shadow-sm rounded-4 mt-5">
+            <div class="card-body p-4">
+                <h5 class="mb-3" style="font-weight:800;"><i class="bi bi-clock-history"></i> My Payment Slips</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Batch</th>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>Status</th>
+                            <th>Slip</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="s : ${slips}">
+                            <td th:text="${s.enrollment.batch.course.courseId}">MA10</td>
+                            <td th:text="${s.enrollment.batch.batchName}">MA10-B1</td>
+                            <td>
+                                <span th:if="${s.month == 1}">January</span>
+                                <span th:if="${s.month == 2}">February</span>
+                                <span th:if="${s.month == 3}">March</span>
+                                <span th:if="${s.month == 4}">April</span>
+                                <span th:if="${s.month == 5}">May</span>
+                                <span th:if="${s.month == 6}">June</span>
+                                <span th:if="${s.month == 7}">July</span>
+                                <span th:if="${s.month == 8}">August</span>
+                                <span th:if="${s.month == 9}">September</span>
+                                <span th:if="${s.month == 10}">October</span>
+                                <span th:if="${s.month == 11}">November</span>
+                                <span th:if="${s.month == 12}">December</span>
+                            </td>
+                            <td th:text="${s.year}">2026</td>
+                            <td>
+                                <span th:if="${s.paymentStatus.name() == 'PENDING'}" class="badge text-bg-warning">PENDING</span>
+                                <span th:if="${s.paymentStatus.name() == 'APPROVED'}" class="badge text-bg-success">APPROVED</span>
+                                <span th:if="${s.paymentStatus.name() == 'REJECTED'}" class="badge text-bg-danger">REJECTED</span>
+                            </td>
+                            <td>
+                                <a th:href="${s.slipImage}" target="_blank" class="btn btn-light btn-sm px-3 rounded-pill fw-semibold border shadow-sm">View</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+</body>
+</html>

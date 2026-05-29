@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Batch Management - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+    
+    <style>
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .action-btn-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .btn-edit { background: rgba(67, 97, 238, 0.1); color: var(--primary); }
+        .btn-edit:hover { background: var(--primary); color: white; }
+        .btn-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+        .btn-toggle { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+        .btn-toggle:hover { background: #64748b; color: white; }
+    </style>
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-people-fill"></i> Operational Units</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Batch Management</h3>
+                <div class="text-muted">Configure student groups, schedules, and active learning cycles.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/courses}" class="btn-hero-outline">
+                    <i class="bi bi-journal-text me-1"></i> Back to Courses
+                </a>
+            </div>
+        </div>
+
+        <div class="flash-wrap">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i><span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+
+        <!-- Create/Edit Batch Section -->
+        <div class="form-card shadow-sm fadeUpDelay1">
+            <h5 class="fw-bold mb-3">
+                <i class="bi bi-diagram-3-fill text-primary me-2"></i>
+                <span th:text="${batchForm.batchId != null ? 'Refine Batch Details' : 'Initialize New Batch'}">Manage Batch</span>
+            </h5>
+            <form th:action="@{/teacher/batches/save}" method="post" th:object="${batchForm}" class="row g-3">
+                <input type="hidden" th:field="*{batchId}" />
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Batch Identifier</label>
+                    <input class="form-control bg-light border-0 px-3 py-2" th:field="*{batchName}" placeholder="Eg: MA10-B1">
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('batchName')}" th:errors="*{batchName}"></div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Operational Year</label>
+                    <input class="form-control bg-light border-0 px-3 py-2" type="number" th:field="*{year}" placeholder="2026">
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('year')}" th:errors="*{year}"></div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Availability</label>
+                    <select class="form-select bg-light border-0 px-3 py-2" th:field="*{status}">
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                    </select>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Associated Course</label>
+                    <select class="form-select bg-light border-0 px-3 py-2" th:field="*{courseId}">
+                        <option value="">-- Choose Course --</option>
+                        <option th:each="c : ${courses}"
+                                th:value="${c.courseId}"
+                                th:text="${c.courseId + ' | ' + c.subject + ' (' + c.grade + ')'}">
+                        </option>
+                    </select>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('courseId')}" th:errors="*{courseId}"></div>
+                </div>
+
+                <div class="col-md-1 d-flex align-items-end gap-2">
+                    <button class="btn btn-primary w-100 py-2 shadow-sm" type="submit">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                    <a th:if="${batchForm.batchId != null}" th:href="@{/teacher/batches}" class="btn btn-light py-2 px-3 border-0">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+
+                <div class="col-12" th:if="${#fields.hasGlobalErrors()}">
+                    <div class="alert alert-danger bg-danger-subtle border-0 mb-0 py-2 small">
+                        <i class="bi bi-exclamation-octagon me-2"></i>
+                        <span th:each="err : ${#fields.globalErrors()}" th:text="${err}"></span>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- All Batches Table -->
+        <div class="card shadow-sm rounded-4 border-0 overflow-hidden fadeUpDelay2">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-grid-3x3-gap text-primary me-2"></i>Operational Groups</h5>
+                <span class="badge bg-primary rounded-pill px-3" th:text="${batches.size() + ' Total'}">0 Total</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-uppercase small fw-bold">
+                            <tr>
+                                <th class="ps-4">Batch Info</th>
+                                <th>Subject & Level</th>
+                                <th class="text-center">Year</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end pe-4">Decisions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(batches)}">
+                                <td colspan="5" class="text-center py-5 text-muted italic">No active batches found.</td>
+                            </tr>
+                            <tr th:each="b : ${batches}">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark" th:text="${b.batchName}">MA10-B1</div>
+                                    <div class="small text-muted fw-mono" th:text="${'ID: ' + b.batchId}">ID: 1</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark" th:text="${b.course.subject}">Mathematics</div>
+                                    <div class="small text-muted" th:text="${b.course.grade}">Grade 10</div>
+                                </td>
+                                <td class="text-center text-muted" th:text="${b.year}">2026</td>
+                                <td class="text-center">
+                                    <span th:if="${#strings.equalsIgnoreCase(b.status, 'ACTIVE')}" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">ACTIVE</span>
+                                    <span th:if="${#strings.equalsIgnoreCase(b.status, 'INACTIVE')}" class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3">INACTIVE</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="action-btn-group">
+                                        <a th:href="@{/teacher/batches/edit/{id}(id=${b.batchId})}" class="btn-action btn-edit shadow-sm" title="Edit Properties">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+
+                                        <form th:action="@{/teacher/batches/toggle/{id}(id=${b.batchId})}" method="post" class="d-inline">
+                                            <button type="submit" class="btn-action btn-toggle shadow-sm" th:title="${#strings.equalsIgnoreCase(b.status, 'ACTIVE') ? 'Deactivate' : 'Activate'}">
+                                                <i class="bi bi-power"></i>
+                                            </button>
+                                        </form>
+
+                                        <form th:action="@{/teacher/batches/delete/{id}(id=${b.batchId})}" method="post" class="d-inline">
+                                            <button type="submit" class="btn-action btn-delete shadow-sm" title="Remove Permanently" onclick="return confirm('Delete this batch? All associated data will be lost.');">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

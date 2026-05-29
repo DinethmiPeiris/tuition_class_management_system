@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Course Enrollments - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-inbox-fill"></i> Registration Desk</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Enrollment Requests</h3>
+                <div class="text-muted">Review and manage student admission requests for various courses.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/courses}" class="btn-hero-outline">
+                    <i class="bi bi-journal-text me-1"></i> Manage Courses
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 fadeUpDelay1" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong class="d-block">Success!</strong>
+                    <span th:text="${success}">Action completed successfully.</span>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card shadow-sm rounded-4 border-0 overflow-hidden fadeUpDelay2">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-stars text-primary me-2"></i>Pending Applications</h5>
+                <span class="badge bg-primary rounded-pill px-3" th:text="${enrollments.size() + ' Total'}">0 Total</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-uppercase small fw-bold">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>Student</th>
+                                <th>Subject & Level</th>
+                                <th>Batch</th>
+                                <th class="text-center">Request Date</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end pe-4">Decisions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(enrollments)}">
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted mb-2"><i class="bi bi-mailbox fs-1"></i></div>
+                                    <div class="fw-bold text-dark">Inbox is empty</div>
+                                    <div class="small text-muted">No new enrollment requests at the moment.</div>
+                                </td>
+                            </tr>
+                            <tr th:each="e : ${enrollments}">
+                                <td class="ps-4">
+                                    <span class="text-muted fw-mono" th:text="${'#E' + e.enrollmentId}">#E1</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark" th:text="${e.student != null ? e.student.fullName : 'Unknown'}">Student</div>
+                                    <div class="small text-muted" th:text="${e.student != null ? e.student.studentCode : '-'}">STU001</div>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark" th:text="${(e.batch != null && e.batch.course != null) ? e.batch.course.subject : 'N/A'}">Subject</span>
+                                    <div class="small text-muted" th:text="${(e.batch != null && e.batch.course != null) ? e.batch.course.grade : ''}">Grade 10</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border rounded-pill px-3" th:text="${e.batch != null ? e.batch.batchName : 'N/A'}">Batch</span>
+                                </td>
+                                <td class="text-center text-muted" th:text="${e.requestDate}">2026-03-30</td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill px-3"
+                                          th:classappend="${e.enrollmentStatus.name() == 'PENDING'} ? ' bg-warning text-dark' : (${e.enrollmentStatus.name() == 'APPROVED'} ? ' bg-success' : ' bg-danger')"
+                                          th:text="${e.enrollmentStatus}">STATUS</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div th:if="${e.enrollmentStatus.name() == 'PENDING'}" class="d-flex justify-content-end gap-2">
+                                        <form th:action="@{/teacher/enrollments/{id}/approve(id=${e.enrollmentId})}" method="post">
+                                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                                                <i class="bi bi-check2 me-1"></i> Approve
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/teacher/enrollments/{id}/reject(id=${e.enrollmentId})}" method="post">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                <i class="bi bi-x me-1"></i> Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <span th:if="${e.enrollmentStatus.name() != 'PENDING'}" class="text-muted small italic">Processed</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
