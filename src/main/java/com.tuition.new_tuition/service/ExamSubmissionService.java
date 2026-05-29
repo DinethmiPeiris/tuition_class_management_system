@@ -1,5 +1,6 @@
 package com.tuition.new_tuition.service;
 
+import com.tuition.new_tuition.dto.AllStudentResultDTO;
 import com.tuition.new_tuition.dto.ProgressReportDTO;
 import com.tuition.new_tuition.dto.StudentProgressReportDTO;
 import com.tuition.new_tuition.dto.StudentReportItemDTO;
@@ -48,65 +49,66 @@ public class ExamSubmissionService {
     }
 
     public List<ProgressReportDTO> getProgressReports() {
-        List<AppUser> students = userRepository.findByRole(Role.STUDENT);
+        List<ExamSubmission> all = examSubmissionRepository.findAll();
         List<ProgressReportDTO> reports = new ArrayList<>();
 
-        for (AppUser student : students) {
-            List<ExamSubmission> allSubmissions = examSubmissionRepository.findByStudentId(student.getId());
+        // get distinct subject+batch combinations
+        List<String> keys = all.stream()
+                .map(s -> s.getExam().getSubject() + "|" + s.getExam().getBatchName())
+                .distinct()
+                .toList();
 
-            if (allSubmissions == null || allSubmissions.isEmpty()) {
-                continue;
-            }
+        for (String key : keys) {
+            String[] parts = key.split("\\|", 2);
+            String subject   = parts[0];
+            String batchName = parts.length > 1 ? parts[1] : "";
 
-            List<String> subjects = allSubmissions.stream()
-                    .map(sub -> sub.getExam().getSubject())
-                    .filter(subject -> subject != null && !subject.isBlank())
-                    .distinct()
+            List<ExamSubmission> group = all.stream()
+                    .filter(s -> subject.equals(s.getExam().getSubject())
+                              && batchName.equals(s.getExam().getBatchName()))
                     .toList();
 
-            for (String subject : subjects) {
-                List<ExamSubmission> subjectSubmissions = allSubmissions.stream()
-                        .filter(sub -> subject.equalsIgnoreCase(sub.getExam().getSubject()))
-                        .toList();
+            long studentCount = group.stream()
+                    .map(s -> s.getStudent().getId())
+                    .distinct().count();
 
-                if (subjectSubmissions.isEmpty()) {
-                    continue;
-                }
+            double avgPct = group.stream()
+                    .filter(s -> s.getTotalMarks() != null && s.getTotalMarks() > 0)
+                    .mapToDouble(s -> ((double) s.getScore() / s.getTotalMarks()) * 100.0)
+                    .average().orElse(0.0);
 
-                int totalExams = subjectSubmissions.size();
+            long passCount    = group.stream().filter(s -> "PASS".equalsIgnoreCase(s.getStatus())).count();
+            long failCount    = group.stream().filter(s -> "FAIL".equalsIgnoreCase(s.getStatus())).count();
+            long pendingCount = group.stream().filter(s -> "PENDING".equalsIgnoreCase(s.getStatus())).count();
 
-                double averagePercentage = subjectSubmissions.stream()
-                        .filter(s -> s.getTotalMarks() != null && s.getTotalMarks() > 0)
-                        .mapToDouble(s -> ((double) s.getScore() / s.getTotalMarks()) * 100.0)
-                        .average()
-                        .orElse(0.0);
-
-                long passCount = subjectSubmissions.stream()
-                        .filter(s -> "PASS".equalsIgnoreCase(s.getStatus()))
-                        .count();
-
-                long failCount = subjectSubmissions.stream()
-                        .filter(s -> "FAIL".equalsIgnoreCase(s.getStatus()))
-                        .count();
-
-                long pendingCount = subjectSubmissions.stream()
-                        .filter(s -> "PENDING".equalsIgnoreCase(s.getStatus()))
-                        .count();
-
-                reports.add(new ProgressReportDTO(
-                        student.getName(),
-                        student.getEmail(),
-                        subject,
-                        totalExams,
-                        Math.round(averagePercentage * 100.0) / 100.0,
-                        passCount,
-                        failCount,
-                        pendingCount
-                ));
-            }
+            reports.add(new ProgressReportDTO(
+                    subject, batchName, (int) studentCount, group.size(),
+                    Math.round(avgPct * 100.0) / 100.0,
+                    passCount, failCount, pendingCount
+            ));
         }
-
         return reports;
+    }
+
+    /** Returns every individual exam result for every student as a flat list. */
+    public List<AllStudentResultDTO> getAllSubmissionsReport() {
+        List<ExamSubmission> all = examSubmissionRepository.findAll();
+        List<AllStudentResultDTO> results = new ArrayList<>();
+        for (ExamSubmission s : all) {
+            int score = s.getScore() != null ? s.getScore() : 0;
+            int total = s.getTotalMarks() != null ? s.getTotalMarks() : 0;
+            double pct = total > 0 ? Math.round(((double) score / total) * 10000.0) / 100.0 : 0.0;
+            results.add(new AllStudentResultDTO(
+                    s.getStudent().getName(),
+                    s.getStudent().getEmail(),
+                    s.getExam().getExamName(),
+                    s.getExam().getSubject(),
+                    s.getExam().getBatchName(),
+                    s.getExam().getExamDate() != null ? s.getExam().getExamDate().toString() : "-",
+                    score, total, pct, s.getStatus()
+            ));
+        }
+        return results;
     }
 
 
