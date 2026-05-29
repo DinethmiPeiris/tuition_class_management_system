@@ -4,17 +4,19 @@ import com.tuition.new_tuition.dto.ProgressReportDTO;
 import com.tuition.new_tuition.service.ExamSubmissionService;
 import com.tuition.new_tuition.service.TeacherProgressReportPdfService;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
 @Controller
+@RequestMapping("/teacher/reports")
 public class TeacherReportController {
 
     private final ExamSubmissionService examSubmissionService;
@@ -26,41 +28,31 @@ public class TeacherReportController {
         this.teacherProgressReportPdfService = teacherProgressReportPdfService;
     }
 
-    @GetMapping("/teacher/reports")
-    public String showProgressReport(HttpSession session, Model model) {
-        String email = (String) session.getAttribute("userEmail");
-        String role = (String) session.getAttribute("userRole");
 
-        if (email == null || role == null || !role.equalsIgnoreCase("TEACHER")) {
-            return "redirect:/login?expired";
-        }
-
+    @GetMapping
+    public String viewTeacherReports(Model model, HttpSession session) {
         List<ProgressReportDTO> reports = examSubmissionService.getProgressReports();
         model.addAttribute("reports", reports);
+        model.addAttribute("allResults", examSubmissionService.getAllSubmissionsReport());
 
         return "teacher-progress-report";
     }
 
-    @GetMapping("/teacher/reports/download")
-    public ResponseEntity<ByteArrayResource> downloadTeacherProgressReport(HttpSession session) {
-        String email = (String) session.getAttribute("userEmail");
-        String role = (String) session.getAttribute("userRole");
-
-        if (email == null || role == null || !role.equalsIgnoreCase("TEACHER")) {
-            return ResponseEntity.status(302)
-                    .header(HttpHeaders.LOCATION, "/login?expired")
-                    .build();
-        }
-
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> downloadTeacherReport(HttpSession session) {
         List<ProgressReportDTO> reports = examSubmissionService.getProgressReports();
-        byte[] pdfData = teacherProgressReportPdfService.generateTeacherProgressReportPdf(reports);
+        byte[] pdfBytes = teacherProgressReportPdfService.generateProgressReportPdf(reports);
 
-        ByteArrayResource resource = new ByteArrayResource(pdfData);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename("teacher-progress-report.pdf")
+                        .build()
+        );
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=teacher-progress-report.pdf")
-                .contentType(MediaType.APPLICATION_PDF)
-                .contentLength(pdfData.length)
-                .body(resource);
+                .headers(headers)
+                .body(pdfBytes);
     }
 }
