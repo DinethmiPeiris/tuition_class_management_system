@@ -54,10 +54,10 @@ Architecture: RESTful APIs, Three-tier Architecture
 
 Team Members
 
-Praghnarathna M.A. (IT24101073)
-Pinnedoowe R.D. (IT24100906)
-Peiris H.D.T. (IT24101204)
-Attanayake H.M. (IT24101104)
-Hewage D.N.K. (IT24101767)
+1.Praghnarathna M.A. (IT24101073)
+2.Pinnedoowe R.D. (IT24100906)
+3.Peiris H.D.T. (IT24101204)
+4.Attanayake H.M. (IT24101104)
+5.Hewage D.N.K. (IT24101767)
 
 Supervised by: Ms. Naduni Ranathunga
