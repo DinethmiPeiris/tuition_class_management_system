@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monthly Attendance Summary - TMS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <!-- Header Section -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 fadeUpDelay1">
+            <div>
+                <div class="hero-badge mb-2">
+                    <i class="bi bi-bar-chart-fill"></i> Analytics
+                </div>
+                <h2 class="mb-0" style="font-weight:900; letter-spacing:-1px; font-size: 2.2rem;">Monthly Summary</h2>
+                <div class="text-muted">Detailed performance and attendance overview for <span class="fw-bold text-primary" th:text="${monthLabel}">March 2026</span>.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:if="${sessionId != null}"
+                   th:href="@{/student/attendance/view(studentId=${studentId},sessionId=${sessionId})}"
+                   class="btn-hero-outline" style="background: #fff; border-color: var(--primary); color: var(--primary); font-weight: 600;">
+                    <i class="bi bi-arrow-left"></i> Back to History
+                </a>
+                <a th:if="${sessionId == null}" th:href="@{/student/attendance}"
+                   class="btn-hero-outline" style="background: #fff; border-color: var(--primary); color: var(--primary); font-weight: 600;">
+                    <i class="bi bi-arrow-left"></i> Back to Sessions
+                </a>
+            </div>
+        </div>
+
+        <!-- Month Filter -->
+        <div class="card shadow-sm border-0 rounded-4 mb-4 fadeUpDelay2 overflow-hidden">
+            <div class="card-body p-4 bg-light bg-opacity-50">
+                <form method="get" th:action="@{/student/attendance/monthly-summary}" class="d-flex gap-3 align-items-end flex-wrap">
+                    <input type="hidden" name="studentId" th:value="${studentId}">
+                    <input type="hidden" name="sessionId" th:value="${sessionId}">
+
+                    <div style="min-width: 250px;">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Select Month</label>
+                        <input type="month" name="month" class="form-control rounded-3" th:value="${selectedMonth}">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary rounded-3 px-4 py-2">
+                        <i class="bi bi-search me-1"></i> Update View
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="row g-4 mb-5 fadeUpDelay3">
+          <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 p-4 h-100 text-center">
+              <div class="text-muted small fw-bold mb-1">TOTAL CLASSES</div>
+              <h3 class="mb-0 fw-black" th:text="${summary.totalClasses}">0</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 p-4 h-100 text-center text-success">
+              <div class="text-muted small fw-bold mb-1">PRESENT</div>
+              <h3 class="mb-0 fw-black" th:text="${summary.presentCount}">0</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 p-4 h-100 text-center text-danger">
+              <div class="text-muted small fw-bold mb-1">ABSENT</div>
+              <h3 class="mb-0 fw-black" th:text="${summary.absentCount}">0</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 p-4 h-100 text-center">
+              <div class="text-muted small fw-bold mb-1">ATTENDANCE %</div>
+              <div class="mt-1">
+                <span th:if="${summary.attendancePercentage >= 75}" class="badge bg-success-light text-success rounded-pill px-3 py-2 fs-6"
+                      th:text="${#numbers.formatDecimal(summary.attendancePercentage, 1, 2) + '%'}">100.00%</span>
+                <span th:if="${summary.attendancePercentage >= 50 and summary.attendancePercentage < 75}" class="badge bg-warning-light text-warning rounded-pill px-3 py-2 fs-6"
+                      th:text="${#numbers.formatDecimal(summary.attendancePercentage, 1, 2) + '%'}">66.67%</span>
+                <span th:if="${summary.attendancePercentage < 50}" class="badge bg-danger-light text-danger rounded-pill px-3 py-2 fs-6"
+                      th:text="${#numbers.formatDecimal(summary.attendancePercentage, 1, 2) + '%'}">33.33%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed History Table -->
+        <div class="card shadow-sm border-0 rounded-4 fadeUpDelay4 overflow-hidden">
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-check me-2 text-primary"></i> Detailed Attendance Log</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Subject</th>
+                                <th>Grade</th>
+                                <th>Batch</th>
+                                <th>Schedule</th>
+                                <th class="pe-4 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${summary.records == null or #lists.isEmpty(summary.records)}">
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <div class="fw-bold">No records found</div>
+                                    <div class="small">No attendance recorded for this period.</div>
+                                </td>
+                            </tr>
+
+                            <tr th:each="record : ${summary.records}">
+                                <td class="ps-4 fw-bold" th:text="${record.date != null ? #temporals.format(record.date, 'yyyy-MM-dd') : '-'}">2026-03-01</td>
+                                <td class="fw-medium text-dark" th:text="${sessionMap.get(record.sessionId) != null and sessionMap.get(record.sessionId).subjectId != null ? subjectMap.get(sessionMap.get(record.sessionId).subjectId) : '-'}">Mathematics</td>
+                                <td th:text="${sessionMap.get(record.sessionId) != null ? sessionMap.get(record.sessionId).grade : '-'}">10</td>
+                                <td th:text="${sessionMap.get(record.sessionId) != null and sessionMap.get(record.sessionId).batchId != null ? batchMap.get(sessionMap.get(record.sessionId).batchId) : '-'}">Batch A</td>
+                                <td class="small" th:text="${sessionMap.get(record.sessionId) != null ? #temporals.format(sessionMap.get(record.sessionId).startTime, 'HH:mm') + ' - ' + #temporals.format(sessionMap.get(record.sessionId).endTime, 'HH:mm') : '-'}">19:00 - 23:30</td>
+                                <td class="pe-4 text-center">
+                                    <span th:if="${record.status != null and record.status.name() == 'PRESENT'}" class="badge bg-success-light text-success px-3 rounded-pill">Present</span>
+                                    <span th:if="${record.status != null and record.status.name() == 'ABSENT'}" class="badge bg-danger-light text-danger px-3 rounded-pill">Absent</span>
+                                    <span th:if="${record.status == null}" class="text-muted">-</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
