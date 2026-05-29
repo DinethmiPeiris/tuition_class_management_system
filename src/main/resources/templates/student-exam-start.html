@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taking Exam - TMS</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body class="bg-light">
+
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <!-- Header Section -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 fadeUpDelay1">
+            <div>
+                <div class="hero-badge mb-2">
+                    <i class="bi bi-pencil-square"></i> Exam in Progress
+                </div>
+                <h2 class="mb-0" style="font-weight:900; letter-spacing:-1px; font-size: 2.2rem;" th:text="${exam.examName}">Exam Name</h2>
+                <div class="text-muted">
+                    Subject: <span class="fw-bold" th:text="${exam.subject}">Subject</span> | 
+                    Batch: <span class="fw-bold" th:text="${exam.batchName}">Batch</span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/student/exams}" class="btn-hero-outline" style="background: #fff; border-color: var(--primary); color: var(--primary); font-weight: 600;">
+                    <i class="bi bi-arrow-left"></i> Cancel Exam
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(questions)}" class="alert alert-info border-0 shadow-sm rounded-4 p-5 text-center fadeUp">
+            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+            <h5 class="fw-bold">No questions available</h5>
+            <p class="mb-0">This exam doesn't have any questions yet. Please contact your instructor.</p>
+        </div>
+
+        <form th:if="${!#lists.isEmpty(questions)}" th:action="@{/student/exams/{id}/submit(id=${exam.id})}" method="post" class="fadeUpDelay2">
+            
+            <div th:each="q, stat : ${questions}" class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">
+                        <span class="text-primary me-2">#<span th:text="${stat.count}">1</span></span>
+                        Question
+                    </h6>
+                    <span class="badge bg-primary-light text-primary rounded-pill px-3" th:text="${q.marks + ' Marks'}">2 Marks</span>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="fs-5 text-dark fw-medium mb-4" th:text="${q.questionText}">Question text goes here...</div>
+
+                    <!-- MCQ OPTIONS -->
+                    <div th:if="${q.type == 'MCQ'}" class="row g-3">
+                        <div class="col-md-6" th:if="${q.optionA != null and q.optionA != ''}">
+                            <label class="d-block p-3 border rounded-4 cursor-pointer hover-bg-light transition-all" style="cursor: pointer;">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" th:name="${'q_' + q.id}" value="A" required>
+                                    <span class="form-check-label fw-bold text-dark ms-2">A. <span th:text="${q.optionA}">Option A</span></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-6" th:if="${q.optionB != null and q.optionB != ''}">
+                            <label class="d-block p-3 border rounded-4 cursor-pointer hover-bg-light transition-all" style="cursor: pointer;">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" th:name="${'q_' + q.id}" value="B" required>
+                                    <span class="form-check-label fw-bold text-dark ms-2">B. <span th:text="${q.optionB}">Option B</span></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-6" th:if="${q.optionC != null and q.optionC != ''}">
+                            <label class="d-block p-3 border rounded-4 cursor-pointer hover-bg-light transition-all" style="cursor: pointer;">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" th:name="${'q_' + q.id}" value="C" required>
+                                    <span class="form-check-label fw-bold text-dark ms-2">C. <span th:text="${q.optionC}">Option C</span></span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-6" th:if="${q.optionD != null and q.optionD != ''}">
+                            <label class="d-block p-3 border rounded-4 cursor-pointer hover-bg-light transition-all" style="cursor: pointer;">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input" type="radio" th:name="${'q_' + q.id}" value="D" required>
+                                    <span class="form-check-label fw-bold text-dark ms-2">D. <span th:text="${q.optionD}">Option D</span></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ESSAY AREA -->
+                    <div th:if="${q.type == 'ESSAY'}" class="mt-2">
+                        <textarea th:name="${'q_' + q.id}" class="form-control rounded-4 p-4 border" 
+                                  rows="6" placeholder="Type your detailed answer here..." required></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Submit Section -->
+            <div class="card shadow-lg border-0 rounded-4 mt-5 p-4 bg-white border-top border-5 border-primary fadeUpDelay3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="text-muted fw-medium">
+                        <i class="bi bi-info-circle me-1"></i> Ensure all questions are answered before submission.
+                    </div>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 fw-black shadow-sm">
+                        <i class="bi bi-send-fill me-2"></i> Submit Exam
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
