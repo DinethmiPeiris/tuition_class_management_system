@@ -114,7 +114,6 @@ The system consists of five main modules:
 ### Tools
 
 - IntelliJ IDEA
-- Antigravity
 - SQL Server Management Studio
 - Git
 - GitHub
