@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Announcements - Teacher - TMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-megaphone"></i> Communications</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Announcement Management</h3>
+                <div class="text-muted small">Create and manage announcements for students.</div>
+            </div>
+            <a th:if="${session.teacherId != null}"
+               th:href="@{/e5/announcements/add}" class="btn btn-primary rounded-3 px-4">
+                <i class="bi bi-plus-circle me-1"></i> Add Announcement
+            </a>
+        </div>
+
+
+
+        <!-- Announcements Card -->
+        <div class="fadeUpDelay1">
+            <div class="card shadow-sm rounded-4 border-0 overflow-hidden">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-megaphone text-primary me-2"></i>Announcements</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4" style="width:5%;">#</th>
+                                <th style="width: 20%;">Title</th>
+                                <th style="width: 25%;">Content</th>
+                                <th style="width: 20%;">Created At</th>
+                                <th class="text-center" style="width: 15%;">Target Group</th>
+                                <th class="text-end pe-4" style="width: 15%; white-space: nowrap;">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${#lists.isEmpty(announcements)}">
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <div class="mb-2"><i class="bi bi-megaphone fs-1 opacity-25"></i></div>
+                                    <div class="fw-bold">No announcements yet</div>
+                                    <div class="small">Click "Add Announcement" to create your first one.</div>
+                                </td>
+                            </tr>
+                            <tr th:each="a, stat : ${announcements}">
+                                <td class="ps-4 text-muted small" th:text="${stat.count}">1</td>
+                                <td class="fw-bold text-dark" th:text="${a.title}">Title</td>
+                                <td class="text-truncate small text-muted" style="max-width:420px;" th:text="${a.content}">Content</td>
+                                <td class="small" th:text="${#temporals.format(a.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-02 10:00</td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill px-3 py-2 bg-primary-light text-primary" style="font-size: 0.95rem; font-weight: 600;" th:text="${a.targetGroup == 'MATHS' ? 'Mathematics Students' : (a.targetGroup == 'SCIENCE' ? 'Science Students' : 'All Students')}">ALL</span>
+                                </td>
+                                <td class="text-end pe-4" th:if="${session.teacherId != null}">
+                                    <a class="btn btn-sm btn-warning rounded-3 px-3 me-1"
+                                       th:href="@{/e5/announcements/edit/{id}(id=${a.id})}">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-danger rounded-3 px-3"
+                                       th:href="@{/e5/announcements/delete/{id}(id=${a.id})}"
+                                       onclick="return confirm('Delete this announcement?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
