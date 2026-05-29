@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progress Report - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+    
+    <style>
+        .stat-card-mini {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 100%;
+            transition: transform 0.2s;
+        }
+        .stat-card-mini:hover { transform: translateY(-5px); }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .bg-excellent { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .bg-average { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .bg-weak { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .bg-total { background: rgba(67, 97, 238, 0.1); color: #4361ee; }
+        
+        .progress-thin { height: 6px; border-radius: 10px; background: #f1f5f9; }
+        .performance-pill {
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-file-earmark-bar-graph-fill"></i> Performance Reports</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Student Progress Analysis</h3>
+                <div class="text-muted">Comprehensive subject-wise performance reporting based on exam results.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/reports/download}"
+                   class="btn btn-primary rounded-3 px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2">
+                    <i class="bi bi-download"></i> Download PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- Analytics Grid -->
+        <div class="row g-4 mb-4 fadeUpDelay1">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-mini shadow-sm">
+                    <div class="stat-icon bg-total"><i class="bi bi-grid-3x3-gap"></i></div>
+                    <div class="text-muted small fw-bold text-uppercase">Subject Groups</div>
+                    <div class="h3 fw-bold mb-0" th:text="${#lists.size(reports)}">0</div>
+                    <div class="small text-muted mt-1">Subject × Grade</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-mini shadow-sm">
+                    <div class="stat-icon bg-excellent"><i class="bi bi-trophy"></i></div>
+                    <div class="text-muted small fw-bold text-uppercase">Excellent</div>
+                    <div class="h3 fw-bold mb-0" th:text="${#aggregates.sum(reports.![averagePercentage >= 75 ? 1 : 0])}">0</div>
+                    <div class="small text-muted mt-1">GPA 75% +</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-mini shadow-sm">
+                    <div class="stat-icon bg-average"><i class="bi bi-activity"></i></div>
+                    <div class="text-muted small fw-bold text-uppercase">Average</div>
+                    <div class="h3 fw-bold mb-0" th:text="${#aggregates.sum(reports.![averagePercentage >= 50 and averagePercentage < 75 ? 1 : 0])}">0</div>
+                    <div class="small text-muted mt-1">GPA 50% - 75%</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card-mini shadow-sm">
+                    <div class="stat-icon bg-weak"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="text-muted small fw-bold text-uppercase">Weak</div>
+                    <div class="h3 fw-bold mb-0" th:text="${#aggregates.sum(reports.![averagePercentage < 50 ? 1 : 0])}">0</div>
+                    <div class="small text-muted mt-1">GPA below 50%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Report Table -->
+        <div class="card shadow-sm rounded-4 border-0 overflow-hidden fadeUpDelay2">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-columns-reverse text-primary me-2"></i>Subject &amp; Grade Summary</h5>
+                <span class="badge bg-light text-dark border rounded-pill px-3" th:text="${#lists.size(reports) + ' Groups'}">0 Groups</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-uppercase small fw-bold">
+                            <tr>
+                                <th class="ps-4">Subject</th>
+                                <th>Grade / Batch</th>
+                                <th class="text-center">Students</th>
+                                <th class="text-center">Total Exams</th>
+                                <th style="width: 200px;">Avg GPA %</th>
+                                <th class="text-center">Pass / Fail / Pending</th>
+                                <th class="text-end pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(reports)}">
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted mb-2"><i class="bi bi-folder-x fs-1"></i></div>
+                                    <div class="fw-bold text-dark">No records found</div>
+                                    <div class="small text-muted">Data will appear once exams are submitted.</div>
+                                </td>
+                            </tr>
+                            <tr th:each="report : ${reports}">
+                                <td class="ps-4">
+                                    <span class="badge rounded-pill px-2 fw-bold"
+                                          style="background:rgba(67,97,238,0.08);color:#4361ee;font-size:.85rem;">
+                                        <i class="bi bi-book me-1"></i><span th:text="${report.subject}">Subject</span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-dark border rounded-pill px-2 fw-bold"
+                                          style="font-size:.82rem;" th:text="${report.batchName}">Batch</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="fw-bold text-dark" th:text="${report.studentCount}">0</span>
+                                    <span class="small text-muted ms-1">students</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="fw-bold text-dark" th:text="${report.totalExams}">0</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="small fw-bold text-dark" th:text="${report.averagePercentage + '%'}">0%</span>
+                                        <div class="progress flex-grow-1 progress-thin">
+                                            <div class="progress-bar" role="progressbar"
+                                                 th:style="'width: ' + ${report.averagePercentage} + '%'"
+                                                 th:classappend="${report.averagePercentage >= 75} ? 'bg-success' : (${report.averagePercentage >= 50} ? 'bg-warning' : 'bg-danger')"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <span class="badge bg-success" style="opacity:0.85;" th:text="${report.passCount}">0</span>
+                                        <span class="badge bg-danger"  style="opacity:0.85;" th:text="${report.failCount}">0</span>
+                                        <span class="badge bg-warning text-dark" style="opacity:0.85;" th:text="${report.pendingCount}">0</span>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <span th:if="${report.averagePercentage >= 75}"  class="performance-pill pill-excellent bg-excellent border border-success-subtle">Excellent</span>
+                                    <span th:if="${report.averagePercentage >= 50 and report.averagePercentage < 75}" class="performance-pill pill-average bg-average border border-warning-subtle text-warning">Average</span>
+                                    <span th:if="${report.averagePercentage < 50}"   class="performance-pill pill-weak bg-weak border border-danger-subtle text-danger">Weak</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

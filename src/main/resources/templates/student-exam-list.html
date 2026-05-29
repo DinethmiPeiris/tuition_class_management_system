@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Exams - TMS</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/theme.css}">
+
+  <style>
+    /* ── Question-type filter pills ── */
+    .filter-pill-bar {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .4rem 1.1rem;
+      border-radius: 50rem;
+      font-size: .82rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1.5px solid transparent;
+      transition: all .18s ease;
+      cursor: pointer;
+      color: #555;
+      background: #f1f3f6;
+      border-color: #e0e3ea;
+    }
+    .filter-pill:hover {
+      background: #e4e8f0;
+      color: #222;
+    }
+    .filter-pill.active-all {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(102,126,234,.35);
+    }
+    .filter-pill.active-mcq {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(17,153,142,.3);
+    }
+    .filter-pill.active-essay {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(245,87,108,.3);
+    }
+
+    /* ── Question type badges in the table ── */
+    .badge-qtype {
+      font-size: .72rem;
+      font-weight: 700;
+      padding: .3rem .7rem;
+      border-radius: 50rem;
+      letter-spacing: .02em;
+    }
+    .badge-qtype-mcq   { background: #e9faf4; color: #0d7a56; }
+    .badge-qtype-essay { background: #fdeef6; color: #b5297c; }
+    .badge-qtype-mixed { background: #eff3ff; color: #3a54c4; }
+    .badge-qtype-none  { background: #f4f5f7; color: #888;    }
+
+    /* ── online pulse (keep existing style) ── */
+    .badge-location-online {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .8rem; font-weight: 700; color: #16a34a;
+      background: #dcfce7; border-radius: 50rem;
+      padding: .25rem .75rem;
+    }
+    .online-pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #16a34a;
+      box-shadow: 0 0 0 0 rgba(22,163,74,.5);
+      animation: pulse-green 1.8s infinite;
+      display: inline-block;
+    }
+    @keyframes pulse-green {
+      0%   { box-shadow: 0 0 0 0   rgba(22,163,74,.5); }
+      70%  { box-shadow: 0 0 0 7px rgba(22,163,74,0);  }
+      100% { box-shadow: 0 0 0 0   rgba(22,163,74,0);  }
+    }
+    .btn-start-exam {
+      display: inline-block; padding: .4rem 1.1rem;
+      border-radius: 50rem; font-size: .82rem; font-weight: 700;
+      background: linear-gradient(135deg,#667eea,#764ba2);
+      color: #fff; text-decoration: none;
+      box-shadow: 0 3px 10px rgba(102,126,234,.3);
+      transition: opacity .18s;
+    }
+    .btn-start-exam:hover { opacity: .88; color: #fff; }
+    .bg-primary-light { background: #eff3ff !important; }
+  </style>
+</head>
+<body>
+
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <!-- ── Page Header ── -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 fadeUpDelay1">
+            <div>
+                <div class="hero-badge mb-2">
+                    <i class="bi bi-journal-text"></i> Exams
+                </div>
+                <h2 class="mb-0" style="font-weight:900; letter-spacing:-1px; font-size:2.2rem;">My Exams</h2>
+                <div class="text-muted">Take online exams or view physical exam schedules.</div>
+            </div>
+        </div>
+
+        <!-- ── Warning banner (if any) ── -->
+        <div th:if="${warningMessage}" class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 fadeUp">
+          <i class="bi bi-exclamation-circle me-2"></i>
+          <span th:text="${warningMessage}">Notification message here.</span>
+        </div>
+
+        <!-- ── Question-Type Filter Pills ── -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 fadeUp" style="background:#fff;">
+          <div class="card-body py-3 px-4 d-flex flex-wrap align-items-center gap-3">
+            <span style="font-size:.82rem; font-weight:700; color:#666; text-transform:uppercase; letter-spacing:.05em;">
+              <i class="bi bi-funnel me-1"></i>Question Type
+            </span>
+            <div class="filter-pill-bar">
+
+              <!-- ALL -->
+              <a th:href="@{/student/exams(questionType='ALL')}"
+                 th:classappend="${questionType == 'ALL'} ? 'active-all' : ''"
+                 class="filter-pill" id="filter-all">
+                <i class="bi bi-grid-3x3-gap-fill"></i> All
+              </a>
+
+              <!-- MCQ -->
+              <a th:href="@{/student/exams(questionType='MCQ')}"
+                 th:classappend="${questionType == 'MCQ'} ? 'active-mcq' : ''"
+                 class="filter-pill" id="filter-mcq">
+                <i class="bi bi-check2-square"></i> MCQ
+              </a>
+
+              <!-- Essay -->
+              <a th:href="@{/student/exams(questionType='ESSAY')}"
+                 th:classappend="${questionType == 'ESSAY'} ? 'active-essay' : ''"
+                 class="filter-pill" id="filter-essay">
+                <i class="bi bi-pencil-square"></i> Essay
+              </a>
+
+            </div>
+
+            <!-- Summary count -->
+            <span class="ms-auto text-muted" style="font-size:.82rem;">
+              <span th:text="${#lists.size(exams)}">0</span> exam(s) shown
+            </span>
+          </div>
+        </div>
+
+        <!-- ── Empty State ── -->
+        <div th:if="${#maps.isEmpty(examsBySubject)}"
+             class="card shadow-sm border-0 rounded-4 mb-4 fadeUpDelay2 overflow-hidden">
+          <div class="card-body text-center py-5 text-muted">
+            <i class="bi bi-journal-x fs-1 mb-3 d-block"></i>
+            <div class="fw-bold fs-5"
+                 th:text="${questionType == 'MCQ'   ? 'No MCQ exams available' :
+                            questionType == 'ESSAY' ? 'No Essay exams available' :
+                            'No exams available'}">No exams available</div>
+            <div class="small mt-1"
+                 th:text="${questionType == 'ALL'
+                   ? 'You have no upcoming exams at this time. Check back later.'
+                   : 'No exams of this type match your enrolled subjects. Try selecting All.'}">
+              You have no upcoming exams at this time.
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Exams by Subject ── -->
+        <div th:each="subjectEntry : ${examsBySubject}"
+             class="card shadow-sm border-0 rounded-4 mb-4 fadeUpDelay2 overflow-hidden">
+
+          <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0" style="font-weight:800;" th:text="${subjectEntry.key + ' Exams'}">Subject Exams</h5>
+            <span class="badge bg-primary-light text-primary rounded-pill px-3">
+              Total: <span th:text="${#lists.size(subjectEntry.value)}">0</span>
+            </span>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                <tr>
+                  <th class="ps-4">#</th>
+                  <th>Exam Name</th>
+                  <th>Batch</th>
+                  <th>Type</th>
+                  <th>Date &amp; Time</th>
+                  <th>Location</th>
+                  <th class="pe-4">Action</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="exam, stat : ${subjectEntry.value}">
+                  <td class="ps-4" th:text="${stat.count}">1</td>
+                  <td class="fw-bold text-dark" th:text="${exam.examName}">Mid Term</td>
+                  <td th:text="${exam.batchName}">Grade 10</td>
+
+                  <!-- Question-type badge -->
+                  <td>
+                    <span th:with="qt=${examTypeMap[exam.id]}"
+                          th:class="${qt == 'MCQ'   ? 'badge-qtype badge-qtype-mcq'   :
+                                     qt == 'ESSAY'  ? 'badge-qtype badge-qtype-essay' :
+                                     qt == 'MIXED'  ? 'badge-qtype badge-qtype-mixed' :
+                                                      'badge-qtype badge-qtype-none'}"
+                          th:text="${qt == 'MCQ'   ? 'MCQ'      :
+                                    qt == 'ESSAY'  ? 'Essay'    :
+                                    qt == 'MIXED'  ? 'MCQ + Essay' :
+                                                     'Physical'}">Type</span>
+                  </td>
+
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-calendar-event small text-muted"></i>
+                      <span th:text="${exam.examDate + ' ' + exam.examTime}">2026-02-13 14:02</span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span th:if="${exam.location != null and #strings.equalsIgnoreCase(exam.location,'Online')}"
+                          class="badge-location-online">
+                      <span class="online-pulse"></span>Online
+                    </span>
+                    <span th:if="${exam.location == null or !#strings.equalsIgnoreCase(exam.location,'Online')}"
+                          class="badge bg-light text-dark border px-3"
+                          th:text="${exam.location != null ? exam.location : 'Physical'}">Physical</span>
+                  </td>
+
+                  <td class="pe-4">
+                    <!-- Start button — online exam, not yet submitted -->
+                    <a class="btn-start-exam"
+                       th:if="${exam.location != null and #strings.equalsIgnoreCase(exam.location,'Online') and submittedMap[exam.id] != true}"
+                       th:href="@{/student/exams/start/{examId}(examId=${exam.id})}">
+                      Start Exam
+                    </a>
+
+                    <!-- Already submitted -->
+                    <span class="badge bg-info-light text-info px-3"
+                          th:if="${exam.location != null and #strings.equalsIgnoreCase(exam.location,'Online') and submittedMap[exam.id] == true}">
+                      <i class="bi bi-check-circle-fill me-1"></i> Submitted
+                    </span>
+
+                    <!-- Physical exam -->
+                    <span class="text-muted small"
+                          th:if="${exam.location == null or !#strings.equalsIgnoreCase(exam.location,'Online')}">
+                      Attend in person
+                    </span>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
