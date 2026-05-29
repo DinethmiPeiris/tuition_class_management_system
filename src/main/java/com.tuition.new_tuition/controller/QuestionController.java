@@ -4,9 +4,12 @@ import com.tuition.new_tuition.entity.Exam;
 import com.tuition.new_tuition.entity.Question;
 import com.tuition.new_tuition.repository.ExamRepository;
 import com.tuition.new_tuition.service.QuestionService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/questions")
@@ -20,66 +23,72 @@ public class QuestionController {
         this.examRepository = examRepository;
     }
 
-    //  LIST (supports /questions/list/{examId} and /questions/{examId})
-    @GetMapping({"/list/{examId}", "/{examId}"})
-    public String list(@PathVariable Long examId, Model model) {
-        Exam exam = examRepository.findById(examId).orElse(null);
+
+    @GetMapping("/exam/{examId}")
+    public String list(@PathVariable("examId") Long examId, Model model, HttpSession session) {
+        Exam exam = examRepository.findById(examId)
+                .orElseThrow(() -> new RuntimeException("Exam not found with id: " + examId));
+
+        List<Question> questions = questionService.findByExamId(examId);
+
         model.addAttribute("exam", exam);
-        model.addAttribute("questions", questionService.findByExamId(examId));
+        model.addAttribute("questions", questions);
+
         return "question-list";
     }
 
-    //  SHOW ADD FORM
     @GetMapping("/add/{examId}")
-    public String showAdd(@PathVariable Long examId, Model model) {
-        Exam exam = examRepository.findById(examId).orElse(null);
+    public String showAdd(@PathVariable("examId") Long examId, Model model, HttpSession session) {
+        Exam exam = examRepository.findById(examId)
+                .orElseThrow(() -> new RuntimeException("Exam not found with id: " + examId));
 
         Question question = new Question();
-        question.setType("MCQ"); // default
+        question.setQuestionText("");
         question.setMarks(1);
 
         model.addAttribute("exam", exam);
         model.addAttribute("question", question);
+
         return "question-add";
     }
 
-    //  SAVE (fixes /questions/save/9)
     @PostMapping("/save/{examId}")
-    public String save(@PathVariable Long examId,
-                       @ModelAttribute("question") Question question) {
+    public String save(@PathVariable("examId") Long examId,
+                       @ModelAttribute("question") Question question,
+                       HttpSession session) {
+        Exam exam = examRepository.findById(examId)
+                .orElseThrow(() -> new RuntimeException("Exam not found with id: " + examId));
 
-        Exam exam = examRepository.findById(examId).orElseThrow();
         questionService.saveForExam(exam, question);
 
-        return "redirect:/questions/list/" + examId;
+        return "redirect:/questions/exam/" + examId;
     }
 
-    //  SHOW EDIT FORM
     @GetMapping("/edit/{id}")
-    public String showEdit(@PathVariable Long id, Model model) {
-        Question q = questionService.findById(id);
-        Exam exam = q.getExam();
+    public String showEdit(@PathVariable("id") Long id, Model model, HttpSession session) {
+        Question question = questionService.findById(id);
 
-        model.addAttribute("exam", exam);
-        model.addAttribute("question", q);
+        model.addAttribute("question", question);
+        model.addAttribute("exam", question.getExam());
+
         return "question-edit";
     }
 
-    //  UPDATE (fixes /questions/update 404)
-    @PostMapping("/update")
-    public String update(@ModelAttribute("question") Question question,
-                         @RequestParam("examId") Long examId) {
+    @PostMapping("/update/{id}")
+    public String update(@PathVariable("id") Long id,
+                         @ModelAttribute("question") Question question,
+                         HttpSession session) {
+        Question existing = questionService.findById(id);
+        Long examId = existing.getExam().getId();
 
-        Exam exam = examRepository.findById(examId).orElseThrow();
-        questionService.updateForExam(exam, question);
+        questionService.updateForExam(existing.getExam(), question);
 
-        return "redirect:/questions/list/" + examId;
+        return "redirect:/questions/exam/" + examId;
     }
 
-    //  DELETE
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable("id") Long id, HttpSession session) {
         Long examId = questionService.deleteAndReturnExamId(id);
-        return "redirect:/questions/list/" + examId;
+        return "redirect:/questions/exam/" + examId;
     }
 }
