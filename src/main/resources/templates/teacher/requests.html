@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration Requests - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+    
+    <style>
+        .request-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            margin-top: 10px;
+        }
+        .btn-decision {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-person-plus-fill"></i> Access Control</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Registration Requests</h3>
+                <div class="text-muted">Review incoming student account requests for portal access.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/students}" class="btn-hero-outline">
+                    <i class="bi bi-people me-1"></i> Active Students
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="fragments/flash :: flash"></div>
+
+        <div class="card shadow-sm rounded-4 border-0 overflow-hidden fadeUpDelay1">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-envelope-paper text-primary me-2"></i>Pending Applications</h5>
+                <span class="badge bg-primary rounded-pill px-3" th:text="${requests.size() + ' Requests'}">0 Requests</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light text-uppercase small fw-bold">
+                            <tr>
+                                <th class="ps-4">Applicant Info</th>
+                                <th>Contact Details</th>
+                                <th style="width: 380px;">Decisions & Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(requests)}">
+                                <td colspan="3" class="text-center py-5">
+                                    <div class="text-muted mb-2"><i class="bi bi-inbox fs-1"></i></div>
+                                    <div class="fw-bold text-dark">No pending requests</div>
+                                    <div class="small text-muted">Awaiting new student registrations.</div>
+                                </td>
+                            </tr>
+                            <tr th:each="r : ${requests}">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark fs-5" th:text="${r.fullName}">Student Name</div>
+                                    <div class="small text-muted" th:text="${'Username: ' + r.username}">Username</div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="bi bi-envelope text-primary small"></i>
+                                        <span class="small" th:text="${r.email}">email@example.com</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-phone text-muted small"></i>
+                                        <span class="small text-muted" th:text="${r.phone}">+94 000 000 000</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="request-card shadow-sm">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <form th:action="@{/teacher/requests/{id}/approve(id=${r.id})}" method="post">
+                                                    <button type="submit" class="btn btn-primary btn-decision w-100 shadow-sm">
+                                                        <i class="bi bi-check-circle me-1"></i> Approve
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <div class="col-12 mt-3">
+                                                <form th:action="@{/teacher/requests/{id}/reject(id=${r.id})}" method="post">
+                                                    <div class="input-group input-group-sm">
+                                                        <input name="reason" class="form-control border-danger-subtle" placeholder="Reason for rejection..." required>
+                                                        <button type="submit" class="btn btn-outline-danger btn-decision px-3">
+                                                            <i class="bi bi-x-circle"></i> Reject
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

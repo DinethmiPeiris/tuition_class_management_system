@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Feedback - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+    
+    <style>
+        .feedback-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 100%;
+            transition: transform 0.3s;
+        }
+        .feedback-card:hover { transform: translateY(-5px); }
+        .rating-stars { color: #ffb703; font-size: 1.1rem; }
+        .comment-text {
+            color: #475569;
+            font-style: italic;
+            position: relative;
+            padding-left: 20px;
+        }
+        .comment-text::before {
+            content: '"';
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 2rem;
+            line-height: 1;
+            color: var(--primary);
+            opacity: 0.2;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-chat-square-heart-fill"></i> Quality Assurance</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Student Feedback</h3>
+                <div class="text-muted">Direct insights and ratings shared by your students.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/dashboard}" class="btn-hero-outline">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div th:replace="fragments/flash :: flash"></div>
+
+        <div th:if="${#lists.isEmpty(feedbacks)}" class="text-center py-5 fadeUpDelay1">
+            <div class="text-muted mb-3"><i class="bi bi-chat-dots fs-1"></i></div>
+            <h5 class="fw-bold text-dark">No feedback available</h5>
+            <p class="text-muted small">You'll see student reviews and ratings here once they are submitted.</p>
+        </div>
+
+        <div class="row g-4 fadeUpDelay1" th:if="${!#lists.isEmpty(feedbacks)}">
+            <div class="col-md-6 col-lg-4" th:each="f : ${feedbacks}">
+                <div class="feedback-card shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="rating-stars">
+                            <i th:each="i : ${#numbers.sequence(1, 5)}" 
+                               th:class="${i <= f.rating} ? 'bi bi-star-fill' : 'bi bi-star'"></i>
+                        </div>
+                        <span class="badge bg-light text-muted rounded-pill small" th:text="${#temporals.format(f.createdAt,'MMM dd, yyyy')}">Mar 30, 2026</span>
+                    </div>
+
+                    <div class="comment-text mb-4" th:text="${f.comment}">
+                        The lessons are very clear and helpful.
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 mt-auto pt-3 border-top">
+                        <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark small" th:text="${f.anonymous ? 'Anonymous Student' : f.student.fullName}">Student Name</div>
+                            <div class="text-muted" style="font-size:0.7rem;">Verified Feedback</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
