@@ -190,21 +190,21 @@ cd new_tuition
 
 ### 2. Configure the Database
 
-Create a database in Microsoft SQL Server.
+This project uses **Microsoft SQL Server** as the database.
 
-Example:
+Create a new database in Microsoft SQL Server:
 
 ```sql
 CREATE DATABASE TuitionClassManagementSystem;
 ```
 
-Then update the database configuration in:
+Then open the following file:
 
 ```text
 src/main/resources/application.properties
 ```
 
-Example:
+Update the database configuration according to your local SQL Server username and password:
 
 ```properties
 spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=TuitionClassManagementSystem;encrypt=true;trustServerCertificate=true
@@ -215,7 +215,7 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 ```
 
-> Do not upload real database usernames, passwords, or private credentials to GitHub.
+The required database tables are generated automatically by **Spring Data JPA / Hibernate** when the application runs.
 
 ### 3. Run the Application
 
