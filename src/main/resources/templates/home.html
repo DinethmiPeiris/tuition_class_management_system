@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TMS - Tuition Management System</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1d6ff3;
+            --primary-dark: #1558c9;
+            --primary-light: #e8f0fe;
+            --primary-mid: #dbeafe;
+            --text-dark: #0f172a;
+            --text-mid: #334155;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .06);
+            --shadow-md: 0 4px 16px rgba(29, 111, 243, .10);
+            --shadow-lg: 0 20px 48px rgba(29, 111, 243, .14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* ─────────── NAVBAR ─────────── */
+        .navbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0.85rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-dot {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), #5b9df9);
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(29, 111, 243, .35);
+        }
+
+        .nav-link {
+            color: var(--text-mid) !important;
+            font-weight: 500;
+            padding: 0.45rem 1rem !important;
+            border-radius: 8px;
+            transition: all .2s;
+        }
+
+        .nav-link:hover {
+            background: var(--primary-light);
+            color: var(--primary) !important;
+        }
+
+        .btn-nav-login {
+            padding: .5rem 1.25rem;
+            border-radius: 8px;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+            background: transparent;
+            text-decoration: none;
+            transition: all .2s;
+        }
+
+        .btn-nav-login:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .btn-nav-signup {
+            padding: .5rem 1.25rem;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(29, 111, 243, .30);
+            transition: all .2s;
+        }
+
+        .btn-nav-signup:hover {
+            background: var(--primary-dark);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        /* ─────────── HERO ─────────── */
+        .hero {
+            background: linear-gradient(145deg, #eef4ff 0%, #f8fafc 50%, #e8f0fe 100%);
+            padding: 90px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(29, 111, 243, .12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            left: -60px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(29, 111, 243, .08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            border: 1px solid rgba(29, 111, 243, .20);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: .85rem;
+            padding: 6px 14px;
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(29, 111, 243, .12);
+            margin-bottom: 1.5rem;
+            animation: fadeUp .7s ease both;
+        }
+
+        .hero-title {
+            font-size: 3.8rem;
+            font-weight: 900;
+            line-height: 1.12;
+            letter-spacing: -1.5px;
+            color: var(--text-dark);
+            margin-bottom: 1.25rem;
+            animation: fadeUp .7s .1s ease both;
+        }
+
+        .hero-title .highlight {
+            color: var(--primary);
+            position: relative;
+        }
+
+        .hero-title .highlight::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 2px;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #5b9df9);
+            border-radius: 99px;
+            opacity: .35;
+        }
+
+        .hero-sub {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            line-height: 1.75;
+            max-width: 540px;
+            margin-bottom: 2rem;
+            animation: fadeUp .7s .2s ease both;
+        }
+
+        .hero-cta {
+            animation: fadeUp .7s .3s ease both;
+        }
+
+        .btn-hero-primary {
+            padding: .8rem 2rem;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 6px 20px rgba(29, 111, 243, .35);
+            text-decoration: none;
+            transition: all .25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hero-primary:hover {
+            background: var(--primary-dark);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(29, 111, 243, .40);
+        }
+
+        .btn-hero-outline {
+            padding: .8rem 1.75rem;
+            background: var(--white);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 1.5px solid var(--primary);
+            text-decoration: none;
+            transition: all .25s;
+        }
+
+        .btn-hero-outline:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* ─────────── DASHBOARD MOCKUP ─────────── */
+        .mockup-wrap {
+            position: relative;
+            animation: floatY 5s ease-in-out infinite;
+        }
+
+        .mockup-card {
+            background: var(--white);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 24px 60px rgba(29, 111, 243, .14);
+            padding: 1.5rem;
+            max-width: 420px;
+            margin-left: auto;
+        }
+
+        .mockup-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .mockup-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #5b9df9);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .mockup-title {
+            font-weight: 700;
+            font-size: .95rem;
+            margin: 0;
+        }
+
+        .mockup-sub {
+            font-size: .78rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .mockup-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: .75rem;
+            border-radius: 10px;
+            transition: background .2s;
+            margin-bottom: .4rem;
+        }
+
+        .mockup-row:hover {
+            background: var(--primary-light);
+        }
+
+        .mockup-ic {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .ic-blue {
+            background: #dbeafe;
+            color: var(--primary);
+        }
+
+        .ic-green {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .ic-orange {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .ic-purple {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .mockup-row-title {
+            font-weight: 600;
+            font-size: .88rem;
+            margin: 0;
+        }
+
+        .mockup-row-sub {
+            font-size: .78rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .badge-live {
+            margin-left: auto;
+            background: #dcfce7;
+            color: #16a34a;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 50px;
+        }
+
+        .badge-soon {
+            margin-left: auto;
+            background: #fff7ed;
+            color: #ea580c;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 50px;
+        }
+
+        /* ─────────── LOCK NOTICE ─────────── */
+        .lock-notice {
+            background: var(--white);
+            border: 1.5px dashed rgba(29, 111, 243, .35);
+            border-radius: 18px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            margin-top: 5rem;
+        }
+
+        .lock-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            display: grid;
+            place-items: center;
+            margin: 0 auto 1rem;
+            color: var(--primary);
+            font-size: 1.6rem;
+        }
+
+        .lock-notice h4 {
+            font-weight: 800;
+            margin-bottom: .5rem;
+        }
+
+        .lock-notice p {
+            color: var(--text-muted);
+            max-width: 520px;
+            margin: 0 auto 1.5rem;
+        }
+
+        /* ─────────── FEATURES ─────────── */
+        .features {
+            padding: 80px 0;
+        }
+
+        .section-eyebrow {
+            display: inline-block;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 4px 14px;
+            border-radius: 50px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: .75rem;
+        }
+
+        .section-sub {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .feat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 2rem 1.75rem;
+            height: 100%;
+            transition: all .3s ease;
+        }
+
+        .feat-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(29, 111, 243, .25);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: var(--primary-light);
+            display: grid;
+            place-items: center;
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+        }
+
+        .feat-card h5 {
+            font-weight: 700;
+            margin-bottom: .5rem;
+        }
+
+        .feat-card p {
+            color: var(--text-muted);
+            font-size: .92rem;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        /* ─────────── HOW IT WORKS ─────────── */
+        .how-it-works {
+            padding: 60px 0 80px;
+            background: linear-gradient(135deg, #eef4ff, #f8fafc);
+        }
+
+        .step-num {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 14px rgba(29, 111, 243, .30);
+        }
+
+        .step-box {
+            text-align: center;
+        }
+
+        .step-box h6 {
+            font-weight: 700;
+            margin-bottom: .4rem;
+        }
+
+        .step-box p {
+            color: var(--text-muted);
+            font-size: .88rem;
+            margin: 0;
+        }
+
+        .step-divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            margin: 1.5rem auto;
+            border-radius: 99px;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .step-connector {
+                position: relative;
+            }
+
+            .step-connector::after {
+                content: '';
+                position: absolute;
+                top: 24px;
+                left: 60%;
+                right: -40%;
+                height: 2px;
+                background: linear-gradient(90deg, var(--primary), rgba(29, 111, 243, .15));
+                border-radius: 99px;
+            }
+        }
+
+        /* ─────────── FOOTER ─────────── */
+        .footer {
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 0;
+        }
+
+        .footer-brand {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: .88rem;
+            margin: 0;
+        }
+
+        /* ─────────── ANIMATIONS ─────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatY {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-14px);
+            }
+        }
+
+        /* ─────────── RESPONSIVE ─────────── */
+        @media (max-width: 991px) {
+            .hero-title {
+                font-size: 2.6rem;
+            }
+
+            .hero {
+                padding: 60px 0;
+            }
+
+            .mockup-card {
+                max-width: 100%;
+                margin-top: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ NAVBAR ══════════ -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <div class="brand-dot"><i class="bi bi-mortarboard-fill"></i></div>
+                TMS
+            </a>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-2" style="color: var(--primary);"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto gap-1 ms-3">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how">How It Works</a></li>
+                </ul>
+                <div class="d-flex gap-2 align-items-center mt-3 mt-lg-0">
+                    <a class="btn-nav-login" th:href="@{/student/login}">Student Log In</a>
+                    <a class="btn-nav-login" th:href="@{/teacher/login}">Teacher Log In</a>
+                    <a class="btn-nav-signup" th:href="@{/student/register}">Register Free</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══════════ HERO ══════════ -->
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center g-5">
+
+                <!-- LEFT -->
+                <div class="col-lg-6">
+                    <div class="hero-badge">
+                        <i class="bi bi-mortarboard-fill"></i> Tuition Management System
+                    </div>
+                    <h1 class="hero-title">
+                        Your classes,<br>
+                        <span class="highlight">better organised</span>
+                    </h1>
+                    <p class="hero-sub">
+                        A dedicated platform for students and teachers to manage classes, attend online exams, and track
+                        academic progress — all in one place.
+                    </p>
+                    <div class="hero-cta d-flex flex-wrap gap-3">
+                        <a th:href="@{/register}" class="btn-hero-primary">
+                            <i class="bi bi-person-plus-fill"></i> Register Now — It's Free
+                        </a>
+                            
+                    </div>
+
+                    <!-- Quick trust points -->
+                    <div class="d-flex flex-wrap gap-3 mt-4"
+                        style="font-size:.88rem; color:var(--text-muted); font-weight:500;">
+                        <span><i class="bi bi-check-circle-fill text-primary me-1"></i>Online Exams</span>
+                        <span><i class="bi bi-check-circle-fill text-primary me-1"></i>Live Class Schedule</span>
+                        <span><i class="bi bi-check-circle-fill text-primary me-1"></i>Instant Results</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT — dashboard mockup -->
+                <div class="col-lg-6">
+                    <div class="mockup-wrap">
+                        <div class="mockup-card">
+                            <div class="mockup-header">
+                                <div class="mockup-avatar">S</div>
+                                <div>
+                                    <p class="mockup-title">Student Dashboard</p>
+                                    <p class="mockup-sub">Login to access full details</p>
+                                </div>
+                            </div>
+
+                            <div class="mockup-row">
+                                <div class="mockup-ic ic-blue"><i class="bi bi-calendar-week"></i></div>
+                                <div>
+                                    <p class="mockup-row-title">Class Schedule</p>
+                                    <p class="mockup-row-sub">View weekly timetable</p>
+                                </div>
+                                <span class="badge-live">Live</span>
+                            </div>
+
+                            <div class="mockup-row">
+                                <div class="mockup-ic ic-orange"><i class="bi bi-journal-check"></i></div>
+                                <div>
+                                    <p class="mockup-row-title">Upcoming Exams</p>
+                                    <p class="mockup-row-sub">3 exams this week</p>
+                                </div>
+                                <span class="badge-soon">Soon</span>
+                            </div>
+
+                            <div class="mockup-row">
+                                <div class="mockup-ic ic-green"><i class="bi bi-graph-up-arrow"></i></div>
+                                <div>
+                                    <p class="mockup-row-title">Your Results</p>
+                                    <p class="mockup-row-sub">Marks &amp; performance</p>
+                                </div>
+                            </div>
+
+                            <div class="mockup-row">
+                                <div class="mockup-ic ic-purple"><i class="bi bi-megaphone"></i></div>
+                                <div>
+                                    <p class="mockup-row-title">Announcements</p>
+                                    <p class="mockup-row-sub">Class notices &amp; updates</p>
+                                </div>
+                            </div>
+
+                            <!-- lock overlay hint -->
+                            <div class="mt-3 p-3 rounded-3 d-flex align-items-center gap-2"
+                                style="background:var(--primary-light); border:1px solid rgba(29,111,243,.20);">
+                                <i class="bi bi-lock-fill text-primary fs-5"></i>
+                                <span style="font-size:.84rem; color:var(--primary); font-weight:600;">
+                                    Register or Log in to access all details
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════ LOCK NOTICE ══════════ -->
+    <section class="container">
+        <div class="lock-notice">
+            <div class="lock-icon"><i class="bi bi-lock-fill"></i></div>
+            <h4>Class details are available after login</h4>
+            <p>
+                Once you register or log in, you'll get full access to the class timetable, exam schedule,
+                practice questions, announcements, and your personal results — all in your dashboard.
+            </p>
+        </div>
+    </section>
+
+    <!-- ══════════ FEATURES ══════════ -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-eyebrow">Features</span>
+                <h2 class="section-title">Everything you need in one place</h2>
+                <p class="section-sub">
+                    Designed for both teachers and students, TMS makes managing tuition classes simple and effective.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feat-card">
+                        <div class="feat-icon"><i class="bi bi-calendar-week"></i></div>
+                        <h5>Class Timetable</h5>
+                        <p>View your weekly class schedule, subject timings, and room details — all organised and easy
+                            to follow.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feat-card">
+                        <div class="feat-icon"><i class="bi bi-laptop"></i></div>
+                        <h5>Online Exams</h5>
+                        <p>Take MCQ and essay-based exams directly online. MCQs are auto-marked and results are shown
+                            instantly.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feat-card">
+                        <div class="feat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                        <h5>Progress Tracking</h5>
+                        <p>See your scores, pass/fail status, and performance history. Never lose track of your academic
+                            journey.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feat-card">
+                        <div class="feat-icon"><i class="bi bi-patch-question"></i></div>
+                        <h5>Practice Questions</h5>
+                        <p>Teachers can add MCQ and essay questions for students to practice and strengthen their
+                            understanding.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feat-card">
+                        <div class="feat-icon"><i class="bi bi-megaphone"></i></div>
+                        <h5>Announcements</h5>
+                        <p>Stay updated with exam reminders, class cancellations, and important notices posted by your
+                            teacher.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feat-card">
+                        <div class="feat-icon"><i class="bi bi-shield-lock"></i></div>
+                        <h5>Secure Role Access</h5>
+                        <p>Separate secure portals for teachers and students, so everyone sees only what is relevant to
+                            them.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════ HOW IT WORKS ══════════ -->
+    <section id="how" class="how-it-works">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="section-eyebrow">Getting Started</span>
+                <h2 class="section-title">How it works</h2>
+                <p class="section-sub">Get started in just three simple steps.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4 step-connector">
+                    <div class="step-box">
+                        <div class="step-num">1</div>
+                        <h6>Create an Account</h6>
+                        <p>Register for free using your email. It only takes a minute — no credit card required.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 step-connector">
+                    <div class="step-box">
+                        <div class="step-num">2</div>
+                        <h6>Log In to Your Dashboard</h6>
+                        <p>Access your personalised dashboard to see your class schedule, exams, and announcements.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-box">
+                        <div class="step-num">3</div>
+                        <h6>Attend Classes, Exams &amp; Track Progress</h6>
+                        <p>Take online exams, view your results, and keep track of your academic performance over time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <footer class="footer">
+        <div class="container text-center">
+            <a href="#" class="footer-brand justify-content-center d-flex mb-2">
+                <i class="bi bi-mortarboard-fill"></i>&nbsp;TMS
+            </a>
+            <p class="footer-text">&copy; 2026 Tuition Management System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
