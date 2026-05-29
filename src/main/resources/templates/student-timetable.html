@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Class Timetable - TMS</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+<body>
+
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+
+        <!-- Header Section -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 fadeUpDelay1">
+            <div>
+                <div class="hero-badge mb-2">
+                    <i class="bi bi-calendar3"></i> Timetable
+                </div>
+                <h2 class="mb-0" style="font-weight:900; letter-spacing:-1px; font-size: 2.2rem;">Class Timetable</h2>
+                <div class="text-muted">View your weekly class schedule and session details.</div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card shadow-sm border-0 rounded-4 mb-4 fadeUp">
+            <div class="card-body p-4">
+                <h5 class="mb-3" style="font-weight:800;"><i class="bi bi-funnel"></i> Filter Your Schedule</h5>
+                <div class="text-muted small mb-3">Search within your enrolled classes.</div>
+                <form method="get" th:action="@{/student/timetable}" class="row g-3">
+                    <div class="col-md-5">
+                        <label for="grade" class="form-label">Grade</label>
+                        <select id="grade" name="grade" class="form-select">
+                            <option value="">Select Grade</option>
+                            <option th:each="g : ${grades}" th:value="${g}" th:text="${'Grade ' + g}"
+                                    th:selected="${selectedGrade != null and selectedGrade == g}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label for="subject" class="form-label">Subject</label>
+                        <select id="subject" name="subject" class="form-select">
+                            <option value="">Select Subject</option>
+                            <option th:each="sub : ${subjects}" th:value="${sub}" th:text="${sub}"
+                                    th:selected="${selectedSubject != null and selectedSubject == sub}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-1"></i> Load
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="small fw-semibold text-muted d-flex align-items-center">
+                        Filters: 
+                        <a th:href="@{/student/timetable}" class="btn btn-sm btn-link text-decoration-none ms-2 fw-bold" style="font-size: 1rem; color: #4361ee;">Reset</a>
+                    </div>
+                    <div class="small fw-semibold text-muted">
+                        Total Sessions: <span class="badge bg-primary rounded-pill py-2 px-3 ms-1" th:text="${totalSchedules}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timetable Table Card -->
+        <div class="card shadow-sm border-0 rounded-4 fadeUpDelay2 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Subject</th>
+                                <th class="text-center">Grade</th>
+                                <th>Batch</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Location</th>
+                                <th class="text-center">Online Session</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${sessions == null or #lists.isEmpty(sessions)}">
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar-x fs-1 mb-2 d-block text-primary" style="opacity: 0.5;"></i>
+                                    <div class="fw-bold fs-5 text-dark">No sessions available</div>
+                                    <div class="mt-1">There are no upcoming sessions scheduled for your enrolled class/batch.</div>
+                                    <div class="mt-1 small">Check back later or contact your teacher for updates.</div>
+                                </td>
+                            </tr>
+
+                            <tr th:each="item : ${sessions}">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark" th:text="${item.id != null ? subjectMap.get(item.id) : '-'}">Mathematics</div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary-light text-primary fw-bold" style="font-size: 1rem; padding: 7px 14px; border-radius: 7px;" th:text="${'Grade ' + item.grade}">Grade 10</span>
+                                </td>
+                                <td th:text="${item.batchId != null ? batchMap.get(item.batchId) : '-'}">Batch A</td>
+                                <td class="fw-medium text-dark" th:text="${item.date != null ? #temporals.format(item.date, 'yyyy-MM-dd') : '-'}">2026-03-20</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-clock small text-muted"></i>
+                                        <span th:text="${(item.startTime != null ? #temporals.format(item.startTime, 'HH:mm') : '-') + ' - ' + (item.endTime != null ? #temporals.format(item.endTime, 'HH:mm') : '-')}">09:00 - 11:00</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-geo-alt small text-muted"></i>
+                                        <span th:text="${item.location ?: '-'}">Hall A</span>
+                                    </div>
+                                </td>
+
+                                <!-- Online Session Link Cell -->
+                                <td class="text-center">
+                                    <!-- Batch class WITH a link set -->
+                                    <a th:if="${'Batch'.equalsIgnoreCase(item.classType) and item.onlineLink != null and !item.onlineLink.isBlank()}"
+                                       th:href="${item.onlineLink}"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="btn btn-sm fw-semibold px-3 py-2 rounded-3 text-white"
+                                       style="background: linear-gradient(135deg, #34a853, #4285f4); border: none; font-size: 0.78rem; letter-spacing: 0.02em; box-shadow: 0 2px 8px rgba(66,133,244,0.25); transition: opacity .2s;"
+                                       onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                                        <i class="bi bi-camera-video-fill me-1"></i> Join Session
+                                    </a>
+                                    <!-- Batch class but NO link yet -->
+                                    <span th:if="${'Batch'.equalsIgnoreCase(item.classType) and (item.onlineLink == null or item.onlineLink.isBlank())}"
+                                          class="badge rounded-pill px-3 py-2"
+                                          style="background:#f1f5f9; color:#94a3b8; font-size:0.75rem; font-weight:600;">
+                                        <i class="bi bi-link-45deg me-1"></i>Link not set
+                                    </span>
+                                    <!-- Non-batch (individual/group) -->
+                                    <span th:if="${!'Batch'.equalsIgnoreCase(item.classType)}"
+                                          class="text-muted small">—</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

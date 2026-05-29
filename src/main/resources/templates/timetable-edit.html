@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Timetable - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0; min-height:85vh;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-pencil-square"></i> Scheduler</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Edit Timetable Session</h3>
+                <div class="text-muted">Update details for an existing class schedule.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/timetable/list}" class="btn-hero-outline">
+                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                </a>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm rounded-4 border-0 fadeUpDelay1">
+                    <div class="card-body p-4 p-md-5">
+                        
+                        <form th:action="@{/teacher/timetable/edit/{id}(id=${id})}" th:object="${form}" method="post" class="row g-4">
+                            
+                            <div class="col-12" th:if="${#fields.hasGlobalErrors()}">
+                                <div class="alert alert-danger bg-danger-subtle border-0 rounded-4 px-4 py-3 shadow-none">
+                                    <div class="fw-bold mb-1">Validation errors detected:</div>
+                                    <div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="small"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Academic Grade</label>
+                                <select class="form-select bg-light border-0 py-3" th:field="*{grade}">
+                                    <option value="">-- Choose Grade --</option>
+                                    <option th:each="g : ${grades}" th:value="${g}" th:text="${'Grade ' + g}"></option>
+                                </select>
+                                <div class="text-danger small mt-1" th:errors="*{grade}"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Subject Title</label>
+                                <select class="form-select bg-light border-0 py-3" th:field="*{subjectId}">
+                                    <option value="">-- Choose Subject --</option>
+                                    <option th:each="sub : ${subjects}" th:value="${sub.id}" th:text="${sub.name}"></option>
+                                </select>
+                                <div class="text-danger small mt-1" th:errors="*{subjectId}"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Assigned Batch</label>
+                                <select class="form-select bg-light border-0 py-3" th:field="*{batchId}">
+                                    <option value="">-- Select Target Batch --</option>
+                                    <option th:each="b : ${batches}" th:value="${b.id}" th:text="${b.name}"></option>
+                                </select>
+                                <div class="text-danger small mt-1" th:errors="*{batchId}"></div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Session Date</label>
+                                <input type="date" class="form-control bg-light border-0 py-3" th:field="*{date}">
+                                <div class="text-danger small mt-1" th:errors="*{date}"></div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Starts At</label>
+                                <input type="time" class="form-control bg-light border-0 py-3" th:field="*{startTime}">
+                                <div class="text-danger small mt-1" th:errors="*{startTime}"></div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Ends At</label>
+                                <input type="time" class="form-control bg-light border-0 py-3" th:field="*{endTime}">
+                                <div class="text-danger small mt-1" th:errors="*{endTime}"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Venue / Location</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-geo-alt-fill text-muted"></i></span>
+                                    <input type="text" class="form-control bg-light border-0 py-3" th:field="*{location}" placeholder="Eg: Hall A, Online Zoom, etc.">
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-end gap-2 mt-5">
+                                <button type="submit" class="btn btn-primary px-5 py-3 fw-bold rounded-pill shadow-sm">
+                                    <i class="bi bi-check2-circle me-2"></i> Update Session
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

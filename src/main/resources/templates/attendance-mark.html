@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mark Attendance - Teacher Panel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+    
+    <style>
+        .student-row:hover { background: rgba(67, 97, 238, 0.02); }
+        .attendance-btn-group {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 4px;
+        }
+        .attendance-btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            flex: 1;
+        }
+        .btn-present { color: #64748b; background: transparent; }
+        .btn-absent { color: #64748b; background: transparent; }
+        
+        .active-present { background: #10b981 !important; color: white !important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .active-absent { background: #ef4444 !important; color: white !important; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+        
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .dot-present { background: #10b981; }
+        .dot-absent { background: #ef4444; }
+    </style>
+</head>
+
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<section class="hero" style="padding:60px 0;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fadeUp">
+            <div>
+                <div class="hero-badge mb-2"><i class="bi bi-clipboard2-check-fill"></i> Attendance Mark</div>
+                <h3 class="mb-0" style="font-weight:900; letter-spacing:-.5px;">Class Attendance Roster</h3>
+                <div class="text-muted d-flex align-items-center gap-3 flex-wrap">
+                    <span><i class="bi bi-mortarboard me-1"></i> <span th:text="${'Grade ' + selectedSession.grade}">Grade 10</span></span>
+                    <span><i class="bi bi-journal-text me-1"></i> <span th:text="${subjectMap.get(selectedSession.subjectId)}">Science</span></span>
+                    <span><i class="bi bi-people me-1"></i> <span th:text="${batchMap.get(selectedSession.batchId)}">Batch A</span></span>
+                    <span><i class="bi bi-calendar-event me-1"></i> <span th:text="${#temporals.format(selectedDate, 'yyyy-MM-dd')}">2026-03-30</span></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/teacher/attendance/select(date=${selectedDate})}" class="btn-hero-outline">
+                    <i class="bi bi-arrow-left"></i> Mark Attendance Page
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-4 border-0 overflow-hidden fadeUpDelay1" style="max-width: 900px; margin: 0 auto;">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i>Students List</h5>
+                <span class="badge bg-primary rounded-pill px-3" th:text="${form.rows.size() + ' Registered'}">0 Registered</span>
+            </div>
+            
+            <div class="card-body p-0">
+                <form th:action="@{/teacher/attendance/save}" th:object="${form}" method="post">
+                    <input type="hidden" th:field="*{sessionId}">
+                    <input type="hidden" th:field="*{date}">
+
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Student Information</th>
+                                    <th class="text-center" style="width: 300px;">Attendance Status</th>
+                                    <th class="text-end pe-4" style="width: 150px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="row, stat : *{rows}" class="student-row">
+                                    <td class="ps-4">
+                                        <div class="fw-bold">
+                                            <span th:text="*{rows[__${stat.index}__].studentName}">Student Name</span>
+                                            <span class="ms-1 small text-primary fw-normal" th:text="'#' + *{rows[__${stat.index}__].studentId}">#101</span>
+                                        </div>
+                                        <div class="small text-muted" th:text="*{rows[__${stat.index}__].studentEmail}">email@example.com</div>
+                                        
+                                        <input type="hidden" th:field="*{rows[__${stat.index}__].studentId}">
+                                        <input type="hidden" th:field="*{rows[__${stat.index}__].studentName}">
+                                        <input type="hidden" th:field="*{rows[__${stat.index}__].studentEmail}">
+                                        <input type="hidden" th:id="'statusInput-' + ${stat.index}" th:field="*{rows[__${stat.index}__].status}">
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="attendance-btn-group mx-auto">
+                                            <button type="button" class="attendance-btn btn-present"
+                                                th:id="'presentBtn-' + ${stat.index}"
+                                                th:classappend="${row.status != null and row.status.name() == 'PRESENT'} ? ' active-present' : ''"
+                                                th:attr="onclick=|setStatus(${stat.index}, 'PRESENT')|">
+                                                <i class="bi bi-check-circle me-1"></i> Present
+                                            </button>
+                                            <button type="button" class="attendance-btn btn-absent"
+                                                th:id="'absentBtn-' + ${stat.index}"
+                                                th:classappend="${row.status != null and row.status.name() == 'ABSENT'} ? ' active-absent' : ''"
+                                                th:attr="onclick=|setStatus(${stat.index}, 'ABSENT')|">
+                                                <i class="bi bi-x-circle me-1"></i> Absent
+                                            </button>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="text-end pe-4">
+                                        <span th:id="'statusText-' + ${stat.index}"
+                                            th:class="${row.status.name() == 'PRESENT'} ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                                            <span th:class="'status-dot ' + (${row.status.name() == 'PRESENT'} ? 'dot-present' : 'dot-absent')"></span>
+                                            <span th:text="${row.status}">PRESENT</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-4 bg-light border-top d-flex justify-content-end gap-3">
+                        <a th:href="@{/teacher/attendance/select(date=${#temporals.format(selectedDate, 'yyyy-MM-dd')})}" class="btn btn-outline-secondary px-4 rounded-3">Cancel / Mark Attendance Page</a>
+                        <button type="submit" class="btn btn-primary px-5 rounded-3 fw-bold shadow-sm">
+                            <i class="bi bi-save me-2"></i> Save Attendance
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/layout :: footer"></div>
+
+<script>
+    function setStatus(index, value) {
+        const input = document.getElementById('statusInput-' + index);
+        const textContainer = document.getElementById('statusText-' + index);
+        const presentBtn = document.getElementById('presentBtn-' + index);
+        const absentBtn = document.getElementById('absentBtn-' + index);
+
+        input.value = value;
+        
+        // Update Buttons
+        presentBtn.classList.toggle('active-present', value === 'PRESENT');
+        absentBtn.classList.toggle('active-absent', value === 'ABSENT');
+
+        // Update Text and Color
+        textContainer.className = value === 'PRESENT' ? 'text-success fw-bold' : 'text-danger fw-bold';
+        textContainer.innerHTML = `<span class="status-dot ${value === 'PRESENT' ? 'dot-present' : 'dot-absent'}"></span>${value}`;
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

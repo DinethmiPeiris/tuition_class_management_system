@@ -1,0 +1,68 @@
+<table class="table table-bordered table-striped">
+  <thead style="background-color:#0f172a; color:white;">
+  <tr>
+    <th>Grade</th>
+    <th>Subject</th>
+    <th>Batch</th>
+    <th>Date</th>
+    <th>Start</th>
+    <th>End</th>
+    <th>Location</th>
+    <th>Status</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <tr th:each="item : ${sessions}">
+    <td th:text="${item.session.grade}"></td>
+    <td th:text="${item.session.subjectName}"></td>
+    <td th:text="${item.session.batchName}"></td>
+    <td th:text="${item.session.date}"></td>
+    <td th:text="${#temporals.format(item.session.startTime, 'HH:mm')}"></td>
+    <td th:text="${#temporals.format(item.session.endTime, 'HH:mm')}"></td>
+    <td th:text="${item.session.location}"></td>
+
+    <!-- STATUS -->
+    <td>
+            <span th:if="${item.status == 'MARKED'}"
+                  class="badge bg-success">Marked</span>
+
+      <span th:if="${item.status == 'NOT_MARKED'}"
+            class="badge bg-warning text-dark">Not Marked</span>
+
+      <span th:if="${item.status == 'FUTURE'}"
+            class="badge bg-secondary">Future Class</span>
+    </td>
+
+    <!-- ACTION -->
+    <td>
+      <!-- MARK -->
+      <a th:if="${item.status == 'NOT_MARKED'}"
+         th:href="@{/teacher/attendance/mark(sessionId=${item.session.id})}"
+         class="btn btn-success btn-sm">
+        Mark
+      </a>
+
+      <!-- UPDATE -->
+      <a th:if="${item.status == 'MARKED'}"
+         th:href="@{/teacher/attendance/mark(sessionId=${item.session.id})}"
+         class="btn btn-primary btn-sm">
+        Update
+      </a>
+
+      <!-- FUTURE -->
+      <button th:if="${item.status == 'FUTURE'}"
+              class="btn btn-secondary btn-sm" disabled>
+        Future
+      </button>
+    </td>
+  </tr>
+
+  <tr th:if="${#lists.isEmpty(sessions)}">
+    <td colspan="9" class="text-center text-muted">
+      No sessions found
+    </td>
+  </tr>
+  </tbody>
+</table>
